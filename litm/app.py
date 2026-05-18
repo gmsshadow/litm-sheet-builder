@@ -46,10 +46,15 @@ def create_app() -> Flask:
         # Ensure at least 4 themes so the form always renders 4 cards.
         while len(character.themes) < 4:
             character.themes.append(Theme())
+        # List of saved character slugs to populate the "Open" dropdown.
+        CHARACTERS_DIR.mkdir(parents=True, exist_ok=True)
+        saved = sorted(p.stem for p in CHARACTERS_DIR.glob("*.json"))
         return render_template(
             "editor.html",
             character=character,
             might_levels=list(MightLevel),
+            saved_characters=saved,
+            current_slug=_slug(character.name) if load else "",
         )
 
     # ---- preview / export --------------------------------------------------

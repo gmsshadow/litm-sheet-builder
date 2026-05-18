@@ -35,6 +35,23 @@ body {
 }
 .actions button:hover { filter: brightness(1.15); }
 
+/* "Open saved character" dropdown sits with the action buttons; visually
+   distinct (darker, less assertive than the green action buttons) but the
+   same height so the header reads as a single bar. */
+.char-load {
+  background: #2a2622;
+  color: #e6e3d6;
+  border: 1px solid #3a342c;
+  padding: 7px 10px;
+  margin-left: 6px;
+  font-size: 13px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  max-width: 220px;
+}
+.char-load:hover { background: #3a342c; }
+
 .layout {
   display: grid;
   grid-template-columns: 420px 1fr;

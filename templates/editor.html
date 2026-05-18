@@ -10,6 +10,14 @@
 <header class="app-header">
   <h1>Legend in the Mist — Sheet Builder</h1>
   <div class="actions">
+    <select id="char-load" class="char-load" title="Open a saved character">
+      <option value="">Open saved character…</option>
+      <option value="" disabled>──────────</option>
+      <option value="">New (blank)</option>
+      {% for slug in saved_characters %}
+        <option value="{{ slug }}" {% if slug == current_slug %}selected{% endif %}>{{ slug }}</option>
+      {% endfor %}
+    </select>
     <button type="button" id="btn-preview">Preview</button>
     <button type="button" id="btn-pdf">Export PDF</button>
     <button type="button" id="btn-save">Save</button>
@@ -192,6 +200,28 @@
       container.removeChild(container.lastElementChild);
       refreshPreview();
     });
+  });
+
+  // Track whether the user has touched the form since load, so the "Open"
+  // dropdown can prompt before discarding unsaved changes.
+  let formDirty = false;
+  form.addEventListener("input", () => { formDirty = true; });
+
+  document.getElementById("char-load").addEventListener("change", (e) => {
+    const slug = e.target.value;
+    // First option is the placeholder — re-selecting it is a no-op.
+    if (e.target.selectedIndex === 0) return;
+    if (formDirty && !confirm("You have unsaved changes. Discard them and open another character?")) {
+      // Revert the select to whatever was previously chosen.
+      e.target.selectedIndex = 0;
+      return;
+    }
+    if (slug) {
+      window.location = "/?load=" + encodeURIComponent(slug);
+    } else {
+      // "New (blank)" option — load the bare editor.
+      window.location = "/";
+    }
   });
 
   // Refresh preview on first load and on every change with light debounce.
