@@ -33,20 +33,25 @@ class MightLevel(str, Enum):
 class Theme:
     """A single theme card on the sheet.
 
-    Pip counts are 0–3 (the rulebook tracks Abandon/Improve/Milestone as
-    3-pip tracks). Scratched-tag state is not modelled: the sheet shows a
-    burn-scratch glyph next to each tag as a visual cue, but marking a tag
-    is done by the player with a pen.
+    Variable-length lists:
+      - power_tags: 2 minimum (2 compulsory), 9 maximum. Empty entries are
+        rendered as a handwriting underline so the player can write in tags
+        gained through play.
+      - weakness_tags: 1–2 entries. The second is optional.
+      - special_improvements: 2 minimum, no fixed maximum.
+
+    Pip counts are 0–3 (Abandon / Improve / Milestone). Scratched state is not
+    modelled — the burn-scratch glyph on the sheet is purely a visual cue for
+    the player to pen-mark when they actually scratch a tag at the table.
     """
     might_level: MightLevel = MightLevel.ADVENTURE
     category: str = ""                # e.g. "Uncanny Being", "Magic", "Past"
-    title: str = ""                   # the title tag, e.g. "Tenderfoot of Vast Renown"
-    motto: str = ""                   # the italic quest motto above the description
-    power_tags: list[str] = field(default_factory=lambda: ["", "", ""])
-    weakness_tag: str = ""
-    new_power_slots: list[str] = field(default_factory=lambda: [""])               # one handwriting slot
+    title: str = ""                   # the title tag, also scratchable
+    quest: str = ""                   # italic quest motto (formerly `motto`)
+    power_tags: list[str] = field(default_factory=lambda: ["", ""])
+    weakness_tags: list[str] = field(default_factory=lambda: [""])
     quest_description: str = ""
-    special_improvement: str = ""
+    special_improvements: list[str] = field(default_factory=lambda: ["", ""])
     abandon_pips: int = 0
     improve_pips: int = 0
     milestone_pips: int = 0
@@ -54,19 +59,63 @@ class Theme:
     @classmethod
     def from_dict(cls, d: dict) -> "Theme":
         d = dict(d)  # don't mutate caller
-        # Deprecated fields from earlier schemas: drop silently so old JSON loads.
+
+        # --- Schema migrations: silently accept older field names ---------
+
+        # motto → quest
+        if "motto" in d:
+            d.setdefault("quest", d["motto"])
+            del d["motto"]
+
+        # weakness_tag (str) → weakness_tags (list)
+        if "weakness_tag" in d:
+            d.setdefault("weakness_tags", [d["weakness_tag"]])
+            del d["weakness_tag"]
+
+        # special_improvement (str) → special_improvements (list)
+        if "special_improvement" in d:
+            existing = d["special_improvement"]
+            d.setdefault("special_improvements", [existing] if existing else [])
+            del d["special_improvement"]
+
+        # new_power_slots (filled values) → appended to power_tags;
+        # empty entries are dropped. The old new-power section is gone.
+        old_new = d.pop("new_power_slots", [])
+        d.pop("new_power_slot_scratched", None)
+        if old_new:
+            existing_power = list(d.get("power_tags", []))
+            for slot in old_new:
+                if slot:
+                    existing_power.append(slot)
+            d["power_tags"] = existing_power
+
+        # Drop scratched-state fields from older schemas
         for deprecated in (
             "title_scratched",
             "weakness_scratched",
             "power_tag_scratched",
-            "new_power_slot_scratched",
         ):
             d.pop(deprecated, None)
+
+        # --- Coerce types / enforce minimum lengths -----------------------
+
         if "might_level" in d and isinstance(d["might_level"], str):
             d["might_level"] = MightLevel(d["might_level"])
-        # Pad/truncate fixed-length lists so templates stay stable.
-        d["power_tags"] = _fixlen(d.get("power_tags", []), 3)
-        d["new_power_slots"] = _fixlen(d.get("new_power_slots", []), 1)
+
+        d["power_tags"] = list(d.get("power_tags", []))
+        while len(d["power_tags"]) < 2:
+            d["power_tags"].append("")
+        d["power_tags"] = d["power_tags"][:9]   # cap at 9
+
+        d["weakness_tags"] = list(d.get("weakness_tags", []))
+        while len(d["weakness_tags"]) < 1:
+            d["weakness_tags"].append("")
+        d["weakness_tags"] = d["weakness_tags"][:2]   # cap at 2
+
+        d["special_improvements"] = list(d.get("special_improvements", []))
+        while len(d["special_improvements"]) < 2:
+            d["special_improvements"].append("")
+
         return cls(**d)
 
 
@@ -76,7 +125,7 @@ class Character:
     descriptor: str = ""              # short epithet under the name
     quote: str = ""                   # italic flavour quote
     portrait_path: Optional[str] = None  # path relative to static/ (e.g. "images/kinsi.png")
-    backpack: list[str] = field(default_factory=lambda: [""] * 6)
+    backpack: list[str] = field(default_factory=lambda: [""] * 10)  # 10 slots, two columns of 5
     themes: list[Theme] = field(default_factory=list)
 
     # ---- (de)serialisation -------------------------------------------------
@@ -89,7 +138,7 @@ class Character:
             descriptor=d.get("descriptor", ""),
             quote=d.get("quote", ""),
             portrait_path=d.get("portrait_path"),
-            backpack=_fixlen(d.get("backpack", []), 6),
+            backpack=_fixlen(d.get("backpack", []), 10),
             themes=themes,
         )
 

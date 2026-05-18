@@ -31,10 +31,12 @@
   </fieldset>
 
   <fieldset class="block">
-    <legend>Backpack (6 slots)</legend>
-    {% for slot in character.backpack %}
-      <label>#{{ loop.index }} <input type="text" name="backpack_{{ loop.index0 }}" value="{{ slot }}"></label>
-    {% endfor %}
+    <legend>Backpack (10 slots)</legend>
+    <div class="backpack-grid-edit">
+      {% for slot in character.backpack %}
+        <label>#{{ loop.index }} <input type="text" name="backpack_{{ loop.index0 }}" value="{{ slot }}"></label>
+      {% endfor %}
+    </div>
   </fieldset>
 
   {% for theme in character.themes[:4] %}
@@ -48,35 +50,67 @@
           {% endfor %}
         </select>
       </label>
-      <label>Category <input type="text" name="theme{{ ti }}_category" value="{{ theme.category }}" placeholder="e.g. Uncanny Being, Past, Magic"></label>
+      <label>Category <input type="text" name="theme{{ ti }}_category" value="{{ theme.category }}" placeholder="e.g. Trait, Past, Magic"></label>
       <label>Title <input type="text" name="theme{{ ti }}_title" value="{{ theme.title }}" placeholder="theme title"></label>
-      <label>Motto <input type="text" name="theme{{ ti }}_motto" value="{{ theme.motto }}"></label>
 
+      {# Power tags — variable, 2..9 rows, +/- controls. The data-* attributes
+         drive the JS for row add/remove. #}
       <div class="tag-edit-group">
-        <div class="tag-edit-group-label">Power tags</div>
-        {% for k in range(3) %}
-          <div class="tag-edit-row">
-            <input type="text" name="theme{{ ti }}_power_{{ k }}" value="{{ theme.power_tags[k] }}" placeholder="power tag {{ k+1 }}">
-          </div>
-        {% endfor %}
-      </div>
-
-      <div class="tag-edit-group">
-        <div class="tag-edit-group-label">Weakness tag</div>
-        <div class="tag-edit-row">
-          <input type="text" name="theme{{ ti }}_weakness" value="{{ theme.weakness_tag }}" placeholder="weakness tag">
+        <div class="tag-edit-group-label">
+          Power tags
+          <span class="row-controls">
+            <button type="button" class="row-btn row-btn--remove" data-target="theme{{ ti }}-power" data-min="2">−</button>
+            <button type="button" class="row-btn row-btn--add"    data-target="theme{{ ti }}-power" data-max="9" data-name="theme{{ ti }}_power" data-placeholder="power tag">+</button>
+          </span>
+          <span class="hint">2 minimum, 9 maximum — blank rows render as handwriting space</span>
+        </div>
+        <div id="theme{{ ti }}-power" class="rows-container">
+          {% for k in range(theme.power_tags|length) %}
+            <div class="tag-edit-row">
+              <input type="text" name="theme{{ ti }}_power_{{ k }}" value="{{ theme.power_tags[k] }}" placeholder="power tag {{ k+1 }}">
+            </div>
+          {% endfor %}
         </div>
       </div>
 
       <div class="tag-edit-group">
-        <div class="tag-edit-group-label">New power tag <span class="hint">(leave blank for handwriting space)</span></div>
-        <div class="tag-edit-row">
-          <input type="text" name="theme{{ ti }}_new_power_0" value="{{ theme.new_power_slots[0] }}" placeholder="new power tag (optional)">
+        <div class="tag-edit-group-label">
+          Weakness tags
+          <span class="row-controls">
+            <button type="button" class="row-btn row-btn--remove" data-target="theme{{ ti }}-weakness" data-min="1">−</button>
+            <button type="button" class="row-btn row-btn--add"    data-target="theme{{ ti }}-weakness" data-max="2" data-name="theme{{ ti }}_weakness" data-placeholder="weakness tag">+</button>
+          </span>
+          <span class="hint">1 minimum, 2 maximum</span>
+        </div>
+        <div id="theme{{ ti }}-weakness" class="rows-container">
+          {% for k in range(theme.weakness_tags|length) %}
+            <div class="tag-edit-row tag-edit-row--no-checkbox">
+              <input type="text" name="theme{{ ti }}_weakness_{{ k }}" value="{{ theme.weakness_tags[k] }}" placeholder="weakness tag">
+            </div>
+          {% endfor %}
         </div>
       </div>
 
-      <label>Quest description <textarea name="theme{{ ti }}_quest_description" rows="2">{{ theme.quest_description }}</textarea></label>
-      <label>Special improvement <textarea name="theme{{ ti }}_special_improvement" rows="2">{{ theme.special_improvement }}</textarea></label>
+      <label>Quest <input type="text" name="theme{{ ti }}_quest" value="{{ theme.quest }}" placeholder="the italic quest motto"></label>
+      <label>Quest description <textarea name="theme{{ ti }}_quest_description" rows="3">{{ theme.quest_description }}</textarea></label>
+
+      <div class="tag-edit-group">
+        <div class="tag-edit-group-label">
+          Special improvements
+          <span class="row-controls">
+            <button type="button" class="row-btn row-btn--remove" data-target="theme{{ ti }}-special" data-min="2">−</button>
+            <button type="button" class="row-btn row-btn--add"    data-target="theme{{ ti }}-special" data-max="6" data-name="theme{{ ti }}_special" data-placeholder="special improvement" data-element="textarea">+</button>
+          </span>
+          <span class="hint">2 minimum</span>
+        </div>
+        <div id="theme{{ ti }}-special" class="rows-container">
+          {% for k in range(theme.special_improvements|length) %}
+            <div class="tag-edit-row">
+              <textarea name="theme{{ ti }}_special_{{ k }}" rows="2" placeholder="special improvement">{{ theme.special_improvements[k] }}</textarea>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
 
       <div class="row pips">
         <label>Abandon pips <input type="number" min="0" max="3" name="theme{{ ti }}_abandon_pips" value="{{ theme.abandon_pips }}"></label>
@@ -95,7 +129,7 @@
 </div>
 
 <script>
-  // Minimal glue: post the form to /preview, /pdf, /save. No build step needed.
+  // Minimal glue: post the form to /preview, /pdf, /save. No build step.
   const form = document.getElementById("character-form");
   const frame = document.getElementById("preview-frame");
 
@@ -125,6 +159,39 @@
     const res = await fetch("/save", { method: "POST", body: formData() });
     const out = await res.json();
     alert(out.ok ? "Saved as " + out.path : "Save failed");
+  });
+
+  // Row add/remove buttons. Buttons carry the target container id and the
+  // base input name (so the new row's input name is `<base>_<index>`).
+  document.querySelectorAll(".row-btn--add").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const container = document.getElementById(btn.dataset.target);
+      const max = parseInt(btn.dataset.max, 10);
+      if (container.children.length >= max) return;
+      const idx = container.children.length;
+      const baseName = btn.dataset.name;
+      const placeholder = btn.dataset.placeholder || "";
+      const isTextarea = btn.dataset.element === "textarea";
+      const row = document.createElement("div");
+      row.className = "tag-edit-row";
+      if (isTextarea) {
+        row.innerHTML = `<textarea name="${baseName}_${idx}" rows="2" placeholder="${placeholder}"></textarea>`;
+      } else {
+        row.innerHTML = `<input type="text" name="${baseName}_${idx}" placeholder="${placeholder} ${idx + 1}">`;
+      }
+      container.appendChild(row);
+      refreshPreview();
+    });
+  });
+
+  document.querySelectorAll(".row-btn--remove").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const container = document.getElementById(btn.dataset.target);
+      const min = parseInt(btn.dataset.min, 10);
+      if (container.children.length <= min) return;
+      container.removeChild(container.lastElementChild);
+      refreshPreview();
+    });
   });
 
   // Refresh preview on first load and on every change with light debounce.

@@ -107,6 +107,7 @@ body.sheet-page {
   flex-direction: row;
   gap: 0.18in;
   flex: 0 0 2.2in;               /* fixed top-row height; WeasyPrint doesn't resolve 100% on flex children reliably */
+  overflow: hidden;              /* clip overlong quotes so they don't bleed into theme cards */
 }
 .character-block {
   flex: 2 1 0;
@@ -227,15 +228,51 @@ body.sheet-page {
   width: 18px;
   height: 18px;
 }
-.backpack-box .numbered-slots {
-  margin: 0.08in 0.12in;
-  padding-left: 0.22in;
-  list-style: decimal;
+
+/* Backpack body is two columns of five numbered slots. The number is rendered
+   via a CSS counter (not the default <ol> marker) so the row can be a flex
+   container with the scratch glyph on the right edge. */
+.backpack-grid {
+  display: flex;
+  gap: 0.12in;
+  margin: 0.05in 0.1in 0.08in;
 }
-.backpack-box .numbered-slots li {
+.backpack-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 0;
+  counter-reset: backpack;
+}
+.backpack-list--right { counter-reset: backpack 5; }
+.backpack-list li {
+  counter-increment: backpack;
+  display: flex;
+  align-items: center;
+  gap: 0.05in;
   min-height: 1.2em;
-  padding: 0.03in 0;
+  padding: 0.02in 0;
   border-bottom: 1px dotted var(--rule);
+}
+.backpack-list li::before {
+  content: counter(backpack) ".";
+  flex: 0 0 1.1em;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.backpack-list .slot-text {
+  flex: 1 1 auto;
+  word-break: break-word;
+}
+.backpack-list li::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  background-image: url("../icons/burn-scratch-empty.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 /* ---- Theme cards --------------------------------------------------------- */
@@ -361,13 +398,15 @@ body.sheet-page {
 .tag-row--no-checkbox { /* no extra rules required */ }
 
 /* "New power tags" — handwriting slots. Underline goes on the ROW (not the
-   inner text span) so the checkbox stays vertically centred on the line. */
-.tag-row--new-power.tag-row--blank {
+   inner text span) so the checkbox stays vertically centred on the line.
+   Applies to ANY blank tag row (power, weakness) for a consistent
+   handwriting affordance. */
+.tag-row--blank {
   border-bottom: 1px solid var(--rule);
   padding-bottom: 0.025in;
   margin-bottom: 0.015in;
 }
-.tag-row--new-power .tag-text {
+.tag-row--blank .tag-text {
   color: var(--ink-soft);
 }
 

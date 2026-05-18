@@ -56,11 +56,18 @@
         <h3 class="block-heading backpack-box__heading">
           <span class="icon icon--backpack"></span>Backpack
         </h3>
-        <ol class="numbered-slots">
-          {% for slot in character.backpack %}
-            <li>{{ slot }}</li>
-          {% endfor %}
-        </ol>
+        <div class="backpack-grid">
+          <ol class="backpack-list">
+            {% for i in range(5) %}
+              <li><span class="slot-text">{{ character.backpack[i] }}</span></li>
+            {% endfor %}
+          </ol>
+          <ol class="backpack-list backpack-list--right">
+            {% for i in range(5, 10) %}
+              <li><span class="slot-text">{{ character.backpack[i] }}</span></li>
+            {% endfor %}
+          </ol>
+        </div>
       </div>
     </section>
 
@@ -81,21 +88,18 @@
           <span class="checkbox"></span>
         </h3>
 
-        {# Power tags — one per line with a scratch glyph #}
+        {# Power tags — variable length. Empty entries render as handwriting
+           underlines so players can write in tags gained through play. The
+           weakness rows sit at the bottom of the same list, separated by a
+           dashed divider on the first weakness row. #}
         <ul class="tag-list">
-          {% for i in range(3) %}
-            {{ tag_row(theme.power_tags[i], kind='power') }}
+          {% for tag in theme.power_tags %}
+            {{ tag_row(tag, kind='power', blank=(not tag)) }}
           {% endfor %}
-          {{ tag_row(theme.weakness_tag, kind='weakness', show_checkbox=False) }}
+          {% for w in theme.weakness_tags %}
+            {{ tag_row(w, kind='weakness', show_checkbox=False, blank=(not w)) }}
+          {% endfor %}
         </ul>
-
-        {# New power tag — single handwriting slot, no placeholder pill #}
-        <div class="theme__section">
-          <div class="theme__section-label">New power tag</div>
-          <ul class="tag-list">
-            {{ tag_row(theme.new_power_slots[0], kind='new-power', blank=True) }}
-          </ul>
-        </div>
 
         <div class="theme__tracks">
           {% for track, count in [
@@ -114,20 +118,20 @@
           {% endfor %}
         </div>
 
-        {% if theme.motto %}
-          <p class="theme__motto">{{ theme.motto }}</p>
+        {% if theme.quest %}
+          <p class="theme__motto">{{ theme.quest }}</p>
         {% endif %}
 
         {% if theme.quest_description %}
           <p class="theme__description">{{ theme.quest_description }}</p>
         {% endif %}
 
-        {% if theme.special_improvement %}
+        {% for imp in theme.special_improvements if imp %}
           <p class="theme__special">
             <span class="theme__special-label">Special improvement —</span>
-            {{ theme.special_improvement }}
+            {{ imp }}
           </p>
-        {% endif %}
+        {% endfor %}
       </article>
     {% endfor %}
   </div>

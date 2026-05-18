@@ -112,22 +112,10 @@ def _slug(s: str) -> str:
 def _character_from_form(form) -> Character:
     """Reconstruct a Character from the flat editor form.
 
-    Field naming convention:
-      name, descriptor, quote, portrait_path
-      backpack_0 … backpack_5
-      theme<i>_<field>  (i = 0..3)
-        theme<i>_might_level
-        theme<i>_category
-        theme<i>_title
-        theme<i>_motto
-        theme<i>_power_0/1/2
-        theme<i>_weakness
-        theme<i>_new_power_0
-        theme<i>_quest_description
-        theme<i>_special_improvement
-        theme<i>_abandon_pips
-        theme<i>_improve_pips
-        theme<i>_milestone_pips
+    Variable-length lists are submitted as sequentially-indexed keys
+    (e.g. theme0_power_0, theme0_power_1, ...). We iterate while keys
+    exist rather than assuming a fixed count, so the user can add/remove
+    rows in the editor without the server needing to know the count.
     """
     themes = []
     for i in range(4):
@@ -137,12 +125,11 @@ def _character_from_form(form) -> Character:
                 might_level=MightLevel(form.get(f"{p}might_level", "adventure")),
                 category=form.get(f"{p}category", ""),
                 title=form.get(f"{p}title", ""),
-                motto=form.get(f"{p}motto", ""),
-                power_tags=[form.get(f"{p}power_{k}", "") for k in range(3)],
-                weakness_tag=form.get(f"{p}weakness", ""),
-                new_power_slots=[form.get(f"{p}new_power_{k}", "") for k in range(1)],
+                quest=form.get(f"{p}quest", ""),
+                power_tags=_collect_indexed(form, f"{p}power_", limit=9),
+                weakness_tags=_collect_indexed(form, f"{p}weakness_", limit=2),
                 quest_description=form.get(f"{p}quest_description", ""),
-                special_improvement=form.get(f"{p}special_improvement", ""),
+                special_improvements=_collect_indexed(form, f"{p}special_", limit=10),
                 abandon_pips=int(form.get(f"{p}abandon_pips", 0) or 0),
                 improve_pips=int(form.get(f"{p}improve_pips", 0) or 0),
                 milestone_pips=int(form.get(f"{p}milestone_pips", 0) or 0),
@@ -153,6 +140,19 @@ def _character_from_form(form) -> Character:
         descriptor=form.get("descriptor", ""),
         quote=form.get("quote", ""),
         portrait_path=form.get("portrait_path") or None,
-        backpack=[form.get(f"backpack_{k}", "") for k in range(6)],
+        backpack=[form.get(f"backpack_{k}", "") for k in range(10)],
         themes=themes,
     )
+
+
+def _collect_indexed(form, prefix: str, limit: int = 99) -> list[str]:
+    """Pull `<prefix>0`, `<prefix>1`, ... from the form, stopping at the first
+    missing index or when `limit` is hit. Trailing empties are preserved so
+    the user's row count round-trips through the form correctly."""
+    out: list[str] = []
+    for i in range(limit):
+        key = f"{prefix}{i}"
+        if key not in form:
+            break
+        out.append(form.get(key, ""))
+    return out
