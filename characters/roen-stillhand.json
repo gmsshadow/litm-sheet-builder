@@ -1,0 +1,96 @@
+{
+  "name": "Roen Stillhand",
+  "descriptor": "a wandering ranger with a debt and a long memory",
+  "quote": "I left home one moonless night and the road forgot to give me back.",
+  "portrait_path": null,
+  "backpack": [
+    "Yew longbow",
+    "Quiver of 12 grey-fletched arrows",
+    "Oiled leather cloak",
+    "Tinderbox and three candle stubs",
+    "Letter sealed with green wax",
+    ""
+  ],
+  "themes": [
+    {
+      "might_level": "origin",
+      "category": "People",
+      "title": "Child of the Greenmarch",
+      "motto": "Whose voices still call me home?",
+      "power_tags": [
+        "forest-bred",
+        "kin among the rangers",
+        "knows the river roads"
+      ],
+      "weakness_tag": "owes a debt to the Warden",
+      "new_power_slots": [
+        ""
+      ],
+      "quest_description": "What do you still owe the people who raised you, and what will it cost to repay it?",
+      "special_improvement": "When you return to a place from your past, take a power tag for the scene.",
+      "abandon_pips": 0,
+      "improve_pips": 1,
+      "milestone_pips": 0
+    },
+    {
+      "might_level": "adventure",
+      "category": "Possessions",
+      "title": "The Yew Bow",
+      "motto": "What will I make this old bow remember?",
+      "power_tags": [
+        "heavy draw",
+        "fletched true",
+        "marks at three hundred paces"
+      ],
+      "weakness_tag": "too long for close quarters",
+      "new_power_slots": [
+        ""
+      ],
+      "quest_description": "Each shot writes a small history into the wood. Where will the bow's story end?",
+      "special_improvement": "Once per session, treat a missed shot as a partial success at a cost.",
+      "abandon_pips": 0,
+      "improve_pips": 0,
+      "milestone_pips": 0
+    },
+    {
+      "might_level": "adventure",
+      "category": "Past",
+      "title": "The Last Caravan",
+      "motto": "What did I see that night I will not name?",
+      "power_tags": [
+        "walks softly",
+        "reads sign",
+        "remembers faces"
+      ],
+      "weakness_tag": "wakes at any sound",
+      "new_power_slots": [
+        "learned the merchant's cipher"
+      ],
+      "quest_description": "The caravan never reached its destination. You did. The rest is still owed an answer.",
+      "special_improvement": "When you encounter someone tied to that night, you may name a true thing about them.",
+      "abandon_pips": 0,
+      "improve_pips": 0,
+      "milestone_pips": 0
+    },
+    {
+      "might_level": "greatness",
+      "category": "Duty",
+      "title": "The Warden's Errand",
+      "motto": "How far will I go to keep this oath?",
+      "power_tags": [
+        "the Warden's seal",
+        "right of passage on the green roads",
+        "a name that opens doors"
+      ],
+      "weakness_tag": "the seal can be recognised",
+      "new_power_slots": [
+        ""
+      ],
+      "quest_description": "You carry an authority older than the realm. It can be invoked — but never twice for the same favour.",
+      "special_improvement": "When you invoke the Warden's name openly, gain a status that lasts the scene.",
+      "abandon_pips": 0,
+      "improve_pips": 0,
+      "milestone_pips": 0
+    }
+  ]
+}

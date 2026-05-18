@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>LitM Sheet Builder</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+</head>
+<body>
+
+<header class="app-header">
+  <h1>Legend in the Mist — Sheet Builder</h1>
+  <div class="actions">
+    <button type="button" id="btn-preview">Preview</button>
+    <button type="button" id="btn-pdf">Export PDF</button>
+    <button type="button" id="btn-save">Save</button>
+  </div>
+</header>
+
+<div class="layout">
+
+<form id="character-form" class="editor" autocomplete="off">
+
+  <fieldset class="block">
+    <legend>Character</legend>
+    <label>Name <input type="text" name="name" value="{{ character.name }}"></label>
+    <label>Descriptor <input type="text" name="descriptor" value="{{ character.descriptor }}"></label>
+    <label>Quote <textarea name="quote" rows="2">{{ character.quote }}</textarea></label>
+    <label>Portrait path (relative to <code>static/</code>)
+      <input type="text" name="portrait_path" value="{{ character.portrait_path or '' }}" placeholder="images/my-portrait.png">
+    </label>
+  </fieldset>
+
+  <fieldset class="block">
+    <legend>Backpack (6 slots)</legend>
+    {% for slot in character.backpack %}
+      <label>#{{ loop.index }} <input type="text" name="backpack_{{ loop.index0 }}" value="{{ slot }}"></label>
+    {% endfor %}
+  </fieldset>
+
+  {% for theme in character.themes[:4] %}
+    {% set ti = loop.index0 %}
+    <fieldset class="block theme-block">
+      <legend>Theme {{ loop.index }}</legend>
+      <label>Might level
+        <select name="theme{{ ti }}_might_level">
+          {% for level in might_levels %}
+            <option value="{{ level.value }}" {% if theme.might_level == level %}selected{% endif %}>{{ level.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Category <input type="text" name="theme{{ ti }}_category" value="{{ theme.category }}" placeholder="e.g. Uncanny Being, Past, Magic"></label>
+      <label>Title <input type="text" name="theme{{ ti }}_title" value="{{ theme.title }}" placeholder="theme title"></label>
+      <label>Motto <input type="text" name="theme{{ ti }}_motto" value="{{ theme.motto }}"></label>
+
+      <div class="tag-edit-group">
+        <div class="tag-edit-group-label">Power tags</div>
+        {% for k in range(3) %}
+          <div class="tag-edit-row">
+            <input type="text" name="theme{{ ti }}_power_{{ k }}" value="{{ theme.power_tags[k] }}" placeholder="power tag {{ k+1 }}">
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="tag-edit-group">
+        <div class="tag-edit-group-label">Weakness tag</div>
+        <div class="tag-edit-row">
+          <input type="text" name="theme{{ ti }}_weakness" value="{{ theme.weakness_tag }}" placeholder="weakness tag">
+        </div>
+      </div>
+
+      <div class="tag-edit-group">
+        <div class="tag-edit-group-label">New power tag <span class="hint">(leave blank for handwriting space)</span></div>
+        <div class="tag-edit-row">
+          <input type="text" name="theme{{ ti }}_new_power_0" value="{{ theme.new_power_slots[0] }}" placeholder="new power tag (optional)">
+        </div>
+      </div>
+
+      <label>Quest description <textarea name="theme{{ ti }}_quest_description" rows="2">{{ theme.quest_description }}</textarea></label>
+      <label>Special improvement <textarea name="theme{{ ti }}_special_improvement" rows="2">{{ theme.special_improvement }}</textarea></label>
+
+      <div class="row pips">
+        <label>Abandon pips <input type="number" min="0" max="3" name="theme{{ ti }}_abandon_pips" value="{{ theme.abandon_pips }}"></label>
+        <label>Improve pips <input type="number" min="0" max="3" name="theme{{ ti }}_improve_pips" value="{{ theme.improve_pips }}"></label>
+        <label>Milestone pips <input type="number" min="0" max="3" name="theme{{ ti }}_milestone_pips" value="{{ theme.milestone_pips }}"></label>
+      </div>
+    </fieldset>
+  {% endfor %}
+
+</form>
+
+<aside class="preview-pane">
+  <iframe id="preview-frame" title="Sheet preview"></iframe>
+</aside>
+
+</div>
+
+<script>
+  // Minimal glue: post the form to /preview, /pdf, /save. No build step needed.
+  const form = document.getElementById("character-form");
+  const frame = document.getElementById("preview-frame");
+
+  function formData() { return new FormData(form); }
+
+  async function refreshPreview() {
+    const res = await fetch("/preview", { method: "POST", body: formData() });
+    const html = await res.text();
+    frame.srcdoc = html;
+  }
+
+  document.getElementById("btn-preview").addEventListener("click", refreshPreview);
+
+  document.getElementById("btn-pdf").addEventListener("click", async () => {
+    const res = await fetch("/pdf", { method: "POST", body: formData() });
+    if (!res.ok) { alert(await res.text()); return; }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const slug = (form.elements.name.value || "character").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    a.href = url; a.download = (slug || "character") + ".pdf";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("btn-save").addEventListener("click", async () => {
+    const res = await fetch("/save", { method: "POST", body: formData() });
+    const out = await res.json();
+    alert(out.ok ? "Saved as " + out.path : "Save failed");
+  });
+
+  // Refresh preview on first load and on every change with light debounce.
+  let debounce;
+  form.addEventListener("input", () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(refreshPreview, 350);
+  });
+  refreshPreview();
+</script>
+
+</body>
+</html>

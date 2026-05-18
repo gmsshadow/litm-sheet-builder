@@ -1,0 +1,138 @@
+{# Character sheet template. Used for both the on-screen preview and the PDF
+   export (via WeasyPrint). Keep this standalone — no template inheritance,
+   no JS, no external requests at render time. CSS lives in static/css/sheet.css.
+
+   A "tag row" is the unit: an empty/filled checkbox (for marking the tag off
+   on the printed sheet) and the tag text or a blank line for handwriting. #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ character.name or "Character Sheet" }}</title>
+  {% if css_inline %}
+    <style>{{ css_inline|safe }}</style>
+  {% else %}
+    <link rel="stylesheet" href="{{ 'static/css/sheet.css' if standalone else url_for('static', filename='css/sheet.css') }}">
+  {% endif %}
+</head>
+<body class="sheet-page">
+
+{% macro tag_row(text, kind='power', blank=False, show_checkbox=True) -%}
+<li class="tag-row tag-row--{{ kind }}{{ ' tag-row--blank' if blank }}{{ ' tag-row--no-checkbox' if not show_checkbox }}">
+  <span class="tag-text">{{ text or '' }}</span>
+  {% if show_checkbox %}
+  <span class="checkbox"></span>
+  {% endif %}
+</li>
+{%- endmacro %}
+
+<div class="sheet">
+
+  <div class="top-row">
+
+    {# --- LEFT: portrait + character info side by side ------------------ #}
+    <section class="character-block">
+      <div class="portrait-frame">
+        {% if character.portrait_path %}
+          <img class="portrait" src="static/{{ character.portrait_path }}" alt="">
+        {% else %}
+          <div class="portrait portrait--empty">portrait</div>
+        {% endif %}
+      </div>
+      <div class="character-info">
+        <h1 class="character-name">{{ character.name or "Unnamed" }}</h1>
+        {% if character.descriptor %}
+          <p class="descriptor">{{ character.descriptor }}</p>
+        {% endif %}
+        {% if character.quote %}
+          <blockquote class="quote">{{ character.quote }}</blockquote>
+        {% endif %}
+      </div>
+    </section>
+
+    {# --- RIGHT: backpack only ----------------------------------------- #}
+    <section class="inventory-block">
+      <div class="inventory-box backpack-box">
+        <h3 class="block-heading backpack-box__heading">
+          <span class="icon icon--backpack"></span>Backpack
+        </h3>
+        <ol class="numbered-slots">
+          {% for slot in character.backpack %}
+            <li>{{ slot }}</li>
+          {% endfor %}
+        </ol>
+      </div>
+    </section>
+
+  </div>{# /.top-row #}
+
+  {# --- BOTTOM ROW: 4 theme cards -------------------------------------- #}
+  <div class="themes-row">
+    {% for theme in character.themes[:4] %}
+      <article class="theme theme--{{ theme.might_level.value }}">
+
+        <header class="theme__banner">
+          <span class="theme__icon icon icon--{{ theme.might_level.icon }}"></span>
+          <span class="theme__category">{{ theme.category or theme.might_level.label }}</span>
+        </header>
+
+        <h3 class="theme__title">
+          <span class="tag-text">{{ theme.title }}</span>
+          <span class="checkbox"></span>
+        </h3>
+
+        {# Power tags — one per line with a scratch glyph #}
+        <ul class="tag-list">
+          {% for i in range(3) %}
+            {{ tag_row(theme.power_tags[i], kind='power') }}
+          {% endfor %}
+          {{ tag_row(theme.weakness_tag, kind='weakness', show_checkbox=False) }}
+        </ul>
+
+        {# New power tag — single handwriting slot, no placeholder pill #}
+        <div class="theme__section">
+          <div class="theme__section-label">New power tag</div>
+          <ul class="tag-list">
+            {{ tag_row(theme.new_power_slots[0], kind='new-power', blank=True) }}
+          </ul>
+        </div>
+
+        <div class="theme__tracks">
+          {% for track, count in [
+              ('Abandon', theme.abandon_pips),
+              ('Improve', theme.improve_pips),
+              ('Milestone', theme.milestone_pips),
+          ] %}
+            <div class="track">
+              <span class="track__label">{{ track }}</span>
+              <span class="track__pips">
+                {% for i in range(3) %}
+                  <span class="pip{{ ' pip--filled' if i < count else '' }}"></span>
+                {% endfor %}
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if theme.motto %}
+          <p class="theme__motto">{{ theme.motto }}</p>
+        {% endif %}
+
+        {% if theme.quest_description %}
+          <p class="theme__description">{{ theme.quest_description }}</p>
+        {% endif %}
+
+        {% if theme.special_improvement %}
+          <p class="theme__special">
+            <span class="theme__special-label">Special improvement —</span>
+            {{ theme.special_improvement }}
+          </p>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,467 @@
+/* ===========================================================================
+   Legend in the Mist character sheet — print stylesheet.
+
+   Might level palette:
+     Origin    → forest green  + leaf icon
+     Adventure → oxblood red    + sword icon
+     Greatness → deep purple    + crown icon
+
+   Fonts: Manuskript Antiqua as the primary face (antique book serif with a
+   real italic), Labrada as a more modern fallback when Manuskript's smaller
+   glyph set is missing a character. WeasyPrint embeds these in the PDF so
+   the output is self-contained.
+   =========================================================================== */
+
+@font-face {
+  font-family: "Manuskript Antiqua";
+  src: url("../fonts/manuskript-antiqua-regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Manuskript Antiqua";
+  src: url("../fonts/manuskript-antiqua-italic.otf") format("opentype");
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: "Labrada";
+  src: url("../fonts/Labrada-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Labrada";
+  src: url("../fonts/Labrada-Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: "Labrada";
+  src: url("../fonts/Labrada-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+}
+
+/* ---- Page setup (PDF) ---------------------------------------------------- */
+
+@page {
+  size: 11in 8.5in;          /* US Letter landscape; swap for A4 landscape if you prefer */
+  margin: 0;                 /* full bleed — the parchment fills the page edge-to-edge */
+}
+
+:root {
+  /* Parchment palette */
+  --paper:        #ece2c8;
+  --paper-shade:  #d8c8a3;
+  --paper-edge:   #b7a378;
+  --ink:          #2d1f12;
+  --ink-soft:     #5a4630;
+  --rule:         #8a6d44;
+
+  /* Might level theme colours */
+  --origin:        #3f5c2f;
+  --origin-soft:   #6b8654;
+  --adventure:     #7a1f1f;
+  --adventure-soft:#a85050;
+  --greatness:     #4a2f60;
+  --greatness-soft:#7a5a9a;
+
+  /* Typography */
+  --font-display: "Manuskript Antiqua", "Labrada", "EB Garamond", "Cardo", Georgia, serif;
+  --font-body:    "Manuskript Antiqua", "Labrada", "EB Garamond", "Cardo", Georgia, serif;
+  --font-tag:     "Manuskript Antiqua", "Labrada", "EB Garamond", Georgia, serif;
+}
+
+/* ---- Reset-ish ----------------------------------------------------------- */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body.sheet-page {
+  font-family: var(--font-body);
+  color: var(--ink);
+  font-size: 9.5pt;
+  line-height: 1.3;
+  /* Parchment texture covers the full page. Fallback colour shows if the
+     image fails to load, so the document never falls back to plain white. */
+  background:
+    url("../images/bg-yellow-old-paper-textures.webp") center/cover no-repeat
+    var(--paper);
+}
+
+/* ---- Sheet layout -------------------------------------------------------- */
+/* Flexbox throughout — WeasyPrint's CSS Grid support hangs. */
+
+.sheet {
+  width: 11in;                   /* full page width */
+  height: 8.5in;                 /* full page height */
+  padding: 0.35in;               /* internal margin equivalent — parchment visible in the padding */
+  display: flex;
+  flex-direction: column;
+  gap: 0.18in;
+}
+
+.top-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.18in;
+  flex: 0 0 2.2in;               /* fixed top-row height; WeasyPrint doesn't resolve 100% on flex children reliably */
+}
+.character-block {
+  flex: 2 1 0;
+  display: flex;
+  flex-direction: row;
+  gap: 0.18in;
+  height: 100%;
+}
+.character-block .portrait-frame { flex: 0 0 1.85in; height: 100%; }
+.character-block .character-info { flex: 1 1 0; min-width: 0; }
+
+.inventory-block { flex: 1 1 0; display: flex; flex-direction: column; height: 100%; }
+
+.themes-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.12in;
+  flex: 1.45 1 0;
+}
+.themes-row > .theme { flex: 1 1 0; min-width: 0; }
+
+/* ---- Character block ----------------------------------------------------- */
+
+.portrait-frame {
+  position: relative;
+  background: var(--paper-shade);
+  border: 1px solid var(--rule);
+  box-shadow: inset 0 0 0.2in rgba(80,50,20,0.18);
+  overflow: hidden;
+}
+.portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.portrait--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-family: var(--font-body);
+}
+
+.character-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.05in 0;
+}
+.character-name {
+  font-family: var(--font-display);
+  font-size: 26pt;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.05in;
+  color: var(--ink);
+  line-height: 1.05;
+}
+.descriptor {
+  font-style: italic;
+  margin: 0 0 0.1in;
+  color: var(--ink-soft);
+  font-size: 11pt;
+}
+.quote {
+  font-style: italic;
+  margin: 0;
+  padding-left: 0.12in;
+  border-left: 2px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: 10pt;
+}
+
+/* ---- Block headings ------------------------------------------------------ */
+
+.block-heading {
+  font-family: var(--font-display);
+  font-size: 13pt;
+  margin: 0 0 0.06in;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.03in;
+  display: flex;
+  align-items: center;
+  gap: 0.08in;
+}
+
+/* ---- Inventory block (backpack only now) -------------------------------- */
+
+.inventory-box {
+  background: rgba(255,250,235,0.4);
+  border: 1px solid var(--rule);
+  padding: 0;                       /* let the banner reach the box edges */
+  flex: 1 1 0;
+  overflow: hidden;                 /* clip the textured banner to the box border */
+}
+
+/* Backpack header now uses the same styling as the Might-level theme banners
+   — small cream uppercase text, centered, larger banner icon — but with its
+   own painted-texture background. Both share the .block-heading hooks so the
+   font family and base sizing are consistent. */
+.backpack-box .block-heading {
+  background: url("../images/header-backpack.webp") center/100% 100% no-repeat var(--paper-edge);
+  color: #f6ecd2;
+  margin: 0;
+  padding: 0.05in 0.1in;
+  border-bottom: none;
+  font-family: var(--font-display);
+  font-size: 9.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.08in;
+}
+.backpack-box .block-heading .icon {
+  width: 18px;
+  height: 18px;
+}
+.backpack-box .numbered-slots {
+  margin: 0.08in 0.12in;
+  padding-left: 0.22in;
+  list-style: decimal;
+}
+.backpack-box .numbered-slots li {
+  min-height: 1.2em;
+  padding: 0.03in 0;
+  border-bottom: 1px dotted var(--rule);
+}
+
+/* ---- Theme cards --------------------------------------------------------- */
+
+.theme {
+  display: block;
+  background: rgba(255,250,235,0.55);
+  border: 1px solid var(--rule);
+  padding: 0 0 0.08in 0;
+  overflow: hidden;
+  font-size: 8.5pt;
+  line-height: 1.25;
+}
+
+.theme__banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.08in;
+  padding: 0.05in 0.1in;
+  color: #f6ecd2;
+  font-family: var(--font-display);
+  font-size: 9.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Each Might-level banner uses a tonal painted-texture image rather than a
+   flat colour. background-size: 100% 100% stretches the 250x30 source to
+   fill the banner regardless of card width. */
+.theme--origin    .theme__banner { background: url("../images/header-origin.webp")    center/100% 100% no-repeat var(--origin); }
+.theme--adventure .theme__banner { background: url("../images/header-adventure.webp") center/100% 100% no-repeat var(--adventure); }
+.theme--greatness .theme__banner { background: url("../images/header-greatness.webp") center/100% 100% no-repeat var(--greatness); }
+
+.theme__title {
+  display: flex;
+  align-items: center;
+  gap: 0.07in;
+  font-family: var(--font-display);
+  font-size: 11pt;
+  line-height: 1.15;
+  margin: 0.06in 0.1in 0.04in;
+  color: var(--ink);
+}
+.theme__title .tag-text { flex: 1 1 auto; word-break: break-word; }
+
+/* ---- Tag rows (one per line, with scratch glyph) ------------------------ */
+
+.tag-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.1in;
+}
+
+.tag-row {
+  display: flex;
+  align-items: center;
+  gap: 0.07in;
+  padding: 0.025in 0;
+  font-family: var(--font-tag);
+  font-style: italic;
+  font-size: 9pt;
+  line-height: 1.25;
+  min-height: 1.25em;            /* keep empty rows visible */
+}
+
+.tag-row .tag-text {
+  flex: 1 1 auto;
+  word-break: break-word;
+}
+
+/* Scratch glyph: a burn-scratch SVG that sits to the right of every
+   scratchable tag (power tags, theme title, new power tag). It is purely
+   visual — a place for the player to draw a pen-mark when they actually
+   scratch the tag at the table. The icon is rendered at full opacity so
+   it reads clearly on the parchment ground. */
+.checkbox {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  background-image: url("../icons/burn-scratch-empty.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Power tags — coloured left accent matches the Might level. */
+.tag-row--power {
+  border-left: 2px solid var(--rule);
+  padding-left: 0.07in;
+}
+.theme--origin    .tag-row--power { border-left-color: var(--origin); }
+.theme--adventure .tag-row--power { border-left-color: var(--adventure); }
+.theme--greatness .tag-row--power { border-left-color: var(--greatness); }
+
+/* Weakness — red accent regardless of Might level, sits below the power tags.
+   A double-down-chevron marker sits to the left of the text, matching the
+   official sheet convention. The ::before becomes the first flex item in the
+   row so the existing flex `gap` handles spacing automatically. */
+.tag-row--weakness {
+  margin-top: 0.05in;
+  padding-top: 0.04in;
+  border-top: 1px dashed var(--rule);
+  color: #6b3a3a;
+}
+.tag-row--weakness::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 11px;
+  flex: 0 0 12px;
+  background-image: url("../icons/weakness-marker.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.tag-row--weakness .tag-text {
+  font-weight: 500;
+}
+
+/* Rows without a checkbox (e.g. weakness) — text is already left-aligned, no
+   special compensation needed now that checkboxes right-align. */
+.tag-row--no-checkbox { /* no extra rules required */ }
+
+/* "New power tags" — handwriting slots. Underline goes on the ROW (not the
+   inner text span) so the checkbox stays vertically centred on the line. */
+.tag-row--new-power.tag-row--blank {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.025in;
+  margin-bottom: 0.015in;
+}
+.tag-row--new-power .tag-text {
+  color: var(--ink-soft);
+}
+
+/* ---- Section labels ------------------------------------------------------ */
+
+.theme__section { margin: 0.07in 0 0; }
+.theme__section-label,
+.theme__special-label {
+  font-family: var(--font-display);
+  font-size: 7pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: block;
+  margin: 0 0.1in 0.03in;
+}
+
+/* ---- Tracks (Abandon / Improve / Milestone) ----------------------------- */
+/* Three columns, each with the row of pips above the label. Centered as a
+   group inside the card. */
+
+.theme__tracks {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  margin: 0.12in 0.1in 0;
+  gap: 0.1in;
+}
+.track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.04in;
+}
+.track__label {
+  font-family: var(--font-display);
+  font-size: 7.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.track__pips { display: flex; gap: 3px; }
+.pip {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--ink-soft);
+  border-radius: 50%;
+  background: transparent;
+}
+.pip--filled { background: var(--ink); }
+.theme--origin    .pip--filled { background: var(--origin); border-color: var(--origin); }
+.theme--adventure .pip--filled { background: var(--adventure); border-color: var(--adventure); }
+.theme--greatness .pip--filled { background: var(--greatness); border-color: var(--greatness); }
+
+/* ---- Motto and prose ----------------------------------------------------- */
+
+.theme__motto {
+  font-style: italic;
+  margin: 0.08in 0.1in 0;
+  color: var(--ink-soft);
+  font-size: 8.5pt;
+}
+.theme__description,
+.theme__special {
+  margin: 0.05in 0.1in 0;
+  font-size: 8pt;
+  line-height: 1.3;
+}
+
+/* ---- Icons --------------------------------------------------------------- */
+
+.icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+}
+.icon--origin    { background-image: url("../icons/origin.svg"); }
+.icon--adventure { background-image: url("../icons/adventure.svg"); }
+.icon--greatness { background-image: url("../icons/greatness.svg"); }
+.icon--backpack  { background-image: url("../icons/backpack.svg"); }
+
+/* The Might-level icons (origin/adventure/greatness) are authored white so
+   they read directly against the coloured banner backgrounds — no filter
+   inversion needed. The lantern remains a dark icon for the parchment
+   backpack header. */
+
+/* Banner icons sit next to a 9.5pt display label, so give them a bit more
+   room than the inline 14px default to keep the artwork legible. */
+.theme__banner .icon {
+  width: 18px;
+  height: 18px;
+}

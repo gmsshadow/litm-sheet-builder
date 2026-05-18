@@ -1,0 +1,5 @@
+Flask>=3.0
+Jinja2>=3.1
+# Optional: WeasyPrint requires native libs (Pango/Cairo/gdk-pixbuf).
+# See README.md for platform-specific install notes.
+weasyprint>=60.0
