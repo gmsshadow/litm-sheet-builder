@@ -106,7 +106,7 @@ body.sheet-page {
   display: flex;
   flex-direction: row;
   gap: 0.18in;
-  flex: 0 0 2.55in;              /* taller top row to fit Fellowship section comfortably */
+  flex: 0 0 2.4in;               /* taller top row to fit Fellowship section comfortably */
   overflow: hidden;              /* clip overlong quotes so they don't bleed into theme cards */
 }
 .character-block {
@@ -250,7 +250,7 @@ body.sheet-page {
   gap: 0.05in;
   min-height: 1.05em;
   padding: 0.015in 0;
-  font-size: 8.5pt;
+  font-size: 10.5pt;
   line-height: 1.2;
   border-bottom: 1px dotted var(--rule);
 }
@@ -320,7 +320,7 @@ body.sheet-page {
   min-height: 1.2em;
   padding: 0.02in 0.04in;
   border-bottom: 1px solid var(--rule);
-  font-size: 9pt;
+  font-size: 11pt;
   line-height: 1.2;
   word-break: break-word;
 }
@@ -425,7 +425,7 @@ body.sheet-page {
   padding: 0.025in 0;
   font-family: var(--font-tag);
   font-style: italic;
-  font-size: 9pt;
+  font-size: 11pt;
   line-height: 1.25;
   min-height: 1.25em;            /* keep empty rows visible */
 }
