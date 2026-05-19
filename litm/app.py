@@ -146,6 +146,9 @@ def _character_from_form(form) -> Character:
         quote=form.get("quote", ""),
         portrait_path=form.get("portrait_path") or None,
         backpack=[form.get(f"backpack_{k}", "") for k in range(10)],
+        fellowship_companions=[form.get(f"fellowship_companion_{k}", "") for k in range(5)],
+        fellowship_tags=[form.get(f"fellowship_tag_{k}", "") for k in range(5)],
+        promise_pips=int(form.get("promise_pips", 0) or 0),
         themes=themes,
     )
 

@@ -126,6 +126,12 @@ class Character:
     quote: str = ""                   # italic flavour quote
     portrait_path: Optional[str] = None  # path relative to static/ (e.g. "images/kinsi.png")
     backpack: list[str] = field(default_factory=lambda: [""] * 10)  # 10 slots, two columns of 5
+    # Fellowship Relationship — five paired companion/relationship-tag rows
+    # and a 0–5 Promise track. Parallel lists keep the JSON layout simple
+    # (and stay consistent with the power_tags / weakness_tags pattern).
+    fellowship_companions: list[str] = field(default_factory=lambda: [""] * 5)
+    fellowship_tags: list[str] = field(default_factory=lambda: [""] * 5)
+    promise_pips: int = 0
     themes: list[Theme] = field(default_factory=list)
 
     # ---- (de)serialisation -------------------------------------------------
@@ -139,6 +145,9 @@ class Character:
             quote=d.get("quote", ""),
             portrait_path=d.get("portrait_path"),
             backpack=_fixlen(d.get("backpack", []), 10),
+            fellowship_companions=_fixlen(d.get("fellowship_companions", []), 5),
+            fellowship_tags=_fixlen(d.get("fellowship_tags", []), 5),
+            promise_pips=int(d.get("promise_pips", 0) or 0),
             themes=themes,
         )
 

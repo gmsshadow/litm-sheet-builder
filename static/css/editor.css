@@ -183,3 +183,27 @@ input:focus, textarea:focus, select:focus {
   grid-template-columns: 1fr 1fr;
   gap: 0 12px;
 }
+
+/* Fellowship edit — paired companion/relationship-tag inputs side by side. */
+.fellowship-edit-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 11px;
+  color: #b8b0a0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.fellowship-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.fellowship-edit-row input {
+  margin: 0;
+}
+.pips-label {
+  margin-top: 8px;
+}

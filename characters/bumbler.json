@@ -15,6 +15,21 @@
     "",
     ""
   ],
+  "fellowship_companions": [
+    "Mira the Weaver",
+    "Old Brog",
+    "Kestrel",
+    "Sister Vala",
+    ""
+  ],
+  "fellowship_tags": [
+    "always patches my mistakes",
+    "distant kinsman",
+    "we share the same secret",
+    "she expects me to grow up",
+    ""
+  ],
+  "promise_pips": 2,
   "themes": [
     {
       "might_level": "origin",

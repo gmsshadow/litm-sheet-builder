@@ -47,6 +47,25 @@
     </div>
   </fieldset>
 
+  <fieldset class="block">
+    <legend>Fellowship Relationship (5 rows)</legend>
+    <div class="fellowship-edit">
+      <div class="fellowship-edit-header">
+        <span>Companion</span>
+        <span>Relationship Tag</span>
+      </div>
+      {% for i in range(5) %}
+        <div class="fellowship-edit-row">
+          <input type="text" name="fellowship_companion_{{ i }}" value="{{ character.fellowship_companions[i] }}" placeholder="companion name">
+          <input type="text" name="fellowship_tag_{{ i }}" value="{{ character.fellowship_tags[i] }}" placeholder="relationship tag">
+        </div>
+      {% endfor %}
+    </div>
+    <label class="pips-label">Promise pips
+      <input type="number" min="0" max="5" name="promise_pips" value="{{ character.promise_pips }}">
+    </label>
+  </fieldset>
+
   {% for theme in character.themes[:4] %}
     {% set ti = loop.index0 %}
     <fieldset class="block theme-block">

@@ -106,11 +106,11 @@ body.sheet-page {
   display: flex;
   flex-direction: row;
   gap: 0.18in;
-  flex: 0 0 2.2in;               /* fixed top-row height; WeasyPrint doesn't resolve 100% on flex children reliably */
+  flex: 0 0 2.55in;              /* taller top row to fit Fellowship section comfortably */
   overflow: hidden;              /* clip overlong quotes so they don't bleed into theme cards */
 }
 .character-block {
-  flex: 2 1 0;
+  flex: 1.9 1 0;
   display: flex;
   flex-direction: row;
   gap: 0.18in;
@@ -119,7 +119,8 @@ body.sheet-page {
 .character-block .portrait-frame { flex: 0 0 1.85in; height: 100%; }
 .character-block .character-info { flex: 1 1 0; min-width: 0; }
 
-.inventory-block { flex: 1 1 0; display: flex; flex-direction: column; height: 100%; }
+.inventory-block  { flex: 0.8 1 0; display: flex; flex-direction: column; height: 100%; }
+.fellowship-block { flex: 1.4 1 0; display: flex; flex-direction: column; height: 100%; }
 
 .themes-row {
   display: flex;
@@ -154,10 +155,8 @@ body.sheet-page {
 }
 
 .character-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   padding: 0.05in 0;
+  overflow: hidden;              /* clip overflow within column for long descriptor/quote combinations */
 }
 .character-name {
   font-family: var(--font-display);
@@ -229,13 +228,13 @@ body.sheet-page {
   height: 18px;
 }
 
-/* Backpack body is two columns of five numbered slots. The number is rendered
-   via a CSS counter (not the default <ol> marker) so the row can be a flex
-   container with the scratch glyph on the right edge. */
+/* Backpack body is a single column of ten numbered slots. The number is
+   rendered via a CSS counter (not the default <ol> marker) so the row can
+   be a flex container with the scratch glyph on the right edge. */
 .backpack-grid {
   display: flex;
   gap: 0.12in;
-  margin: 0.05in 0.1in 0.08in;
+  margin: 0.04in 0.1in 0.06in;
 }
 .backpack-list {
   list-style: none;
@@ -244,21 +243,23 @@ body.sheet-page {
   flex: 1 1 0;
   counter-reset: backpack;
 }
-.backpack-list--right { counter-reset: backpack 5; }
 .backpack-list li {
   counter-increment: backpack;
   display: flex;
   align-items: center;
   gap: 0.05in;
-  min-height: 1.2em;
-  padding: 0.02in 0;
+  min-height: 1.05em;
+  padding: 0.015in 0;
+  font-size: 8.5pt;
+  line-height: 1.2;
   border-bottom: 1px dotted var(--rule);
 }
 .backpack-list li::before {
   content: counter(backpack) ".";
-  flex: 0 0 1.1em;
+  flex: 0 0 1.2em;
   color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 .backpack-list .slot-text {
   flex: 1 1 auto;
@@ -266,13 +267,104 @@ body.sheet-page {
 }
 .backpack-list li::after {
   content: "";
-  width: 12px;
-  height: 12px;
-  flex: 0 0 12px;
+  width: 11px;
+  height: 11px;
+  flex: 0 0 11px;
   background-image: url("../icons/burn-scratch-empty.svg");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+}
+
+/* ---- Fellowship Relationship ------------------------------------------- */
+/* Same banner styling as the backpack header (reuses the parchment-toned
+   texture). Body is a 2-column grid of paired companion/relationship-tag
+   cells, each with a handwriting underline. The Promise row at the bottom
+   tracks 0-5 filled pips, larger than the abandon/improve/milestone pips
+   to match the rulebook's visual hierarchy. */
+
+.fellowship-box {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.fellowship-box .block-heading {
+  background: url("../images/header-backpack.webp") center/100% 100% no-repeat var(--paper-edge);
+  color: #f6ecd2;
+  margin: 0;
+  padding: 0.05in 0.1in;
+  border-bottom: none;
+  font-family: var(--font-display);
+  font-size: 9.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  display: block;
+}
+
+.fellowship-grid {
+  display: flex;
+  flex-direction: column;
+  margin: 0.04in 0.1in 0;
+  flex: 1 1 auto;
+}
+.fellowship-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.08in;
+}
+.fellowship-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 1.2em;
+  padding: 0.02in 0.04in;
+  border-bottom: 1px solid var(--rule);
+  font-size: 9pt;
+  line-height: 1.2;
+  word-break: break-word;
+}
+.fellowship-row--header .fellowship-cell {
+  border-bottom: none;
+  font-family: var(--font-display);
+  font-size: 8pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-align: center;
+  padding-top: 0.02in;
+  padding-bottom: 0.02in;
+}
+
+.promise {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1in;
+  margin: 0.08in 0.1in 0.08in;
+}
+.promise__label {
+  font-family: var(--font-display);
+  font-size: 9pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.promise__pips {
+  display: inline-flex;
+  gap: 4px;
+}
+.promise__pip {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--ink-soft);
+  border-radius: 50%;
+  background: transparent;
+}
+.promise__pip--filled {
+  background: var(--ink);
+  border-color: var(--ink);
 }
 
 /* ---- Theme cards --------------------------------------------------------- */

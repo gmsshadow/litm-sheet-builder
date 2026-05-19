@@ -50,7 +50,7 @@
       </div>
     </section>
 
-    {# --- RIGHT: backpack only ----------------------------------------- #}
+    {# --- MIDDLE: backpack ----------------------------------------------- #}
     <section class="inventory-block">
       <div class="inventory-box backpack-box">
         <h3 class="block-heading backpack-box__heading">
@@ -58,15 +58,37 @@
         </h3>
         <div class="backpack-grid">
           <ol class="backpack-list">
+            {% for i in range(10) %}
+              <li><span class="slot-text">{{ character.backpack[i] }}</span></li>
+            {% endfor %}
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    {# --- RIGHT: Fellowship Relationship -------------------------------- #}
+    <section class="fellowship-block">
+      <div class="inventory-box fellowship-box">
+        <h3 class="block-heading fellowship-box__heading">Fellowship Relationship</h3>
+        <div class="fellowship-grid">
+          <div class="fellowship-row fellowship-row--header">
+            <div class="fellowship-cell">Companion</div>
+            <div class="fellowship-cell">Relationship Tag</div>
+          </div>
+          {% for i in range(5) %}
+            <div class="fellowship-row">
+              <div class="fellowship-cell">{{ character.fellowship_companions[i] }}</div>
+              <div class="fellowship-cell">{{ character.fellowship_tags[i] }}</div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="promise">
+          <span class="promise__label">Promise</span>
+          <span class="promise__pips">
             {% for i in range(5) %}
-              <li><span class="slot-text">{{ character.backpack[i] }}</span></li>
+              <span class="promise__pip{{ ' promise__pip--filled' if i < character.promise_pips else '' }}"></span>
             {% endfor %}
-          </ol>
-          <ol class="backpack-list backpack-list--right">
-            {% for i in range(5, 10) %}
-              <li><span class="slot-text">{{ character.backpack[i] }}</span></li>
-            {% endfor %}
-          </ol>
+          </span>
         </div>
       </div>
     </section>
