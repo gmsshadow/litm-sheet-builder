@@ -20,6 +20,12 @@
 </head>
 <body class="sheet-page sheet-page--{{ game.id }}">
 
+{% macro game_icon(filename, extra_class='') -%}
+<img class="icon{{ ' ' + extra_class if extra_class else '' }}"
+     src="{{ ('static/icons/' + filename) if standalone else url_for('static', filename='icons/' + filename) }}"
+     alt="">
+{%- endmacro %}
+
 {% macro tag_row(text, kind='power', blank=False, show_checkbox=True) -%}
 <li class="tag-row tag-row--{{ kind }}{{ ' tag-row--blank' if blank }}{{ ' tag-row--no-checkbox' if not show_checkbox }}">
   <span class="tag-text">{{ text or '' }}</span>
@@ -57,7 +63,7 @@
     <section class="inventory-block">
       <div class="inventory-box backpack-box">
         <h3 class="block-heading backpack-box__heading">
-          <span class="icon" style="background-image: url('{{ ('static/icons/' + game.backpack_icon) if standalone else url_for('static', filename='icons/' + game.backpack_icon) }}')"></span>{{ game.backpack_label }}
+          {{ game_icon(game.backpack_icon) }}{{ game.backpack_label }}
         </h3>
         <div class="backpack-grid">
           <ol class="backpack-list">
@@ -74,7 +80,7 @@
       <div class="inventory-box fellowship-box">
         <h3 class="block-heading fellowship-box__heading">
           {% if game.fellowship_icon %}
-            <span class="icon" style="background-image: url('{{ ('static/icons/' + game.fellowship_icon) if standalone else url_for('static', filename='icons/' + game.fellowship_icon) }}')"></span>
+            {{ game_icon(game.fellowship_icon) }}
           {% endif %}
           {{ game.fellowship_label }}
         </h3>
@@ -112,9 +118,7 @@
       <article class="theme theme--{{ tt.id }}">
 
         <header class="theme__banner">
-          <img class="theme__icon icon icon--{{ tt.id }}"
-               src="{{ ('static/icons/' + tt.icon) if standalone else url_for('static', filename='icons/' + tt.icon) }}"
-               alt="">
+          {{ game_icon(tt.icon, 'theme__icon icon--' + tt.id) }}
           <span class="theme__category">{{ theme.category or tt.label }}</span>
         </header>
 

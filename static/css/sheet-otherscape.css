@@ -55,11 +55,15 @@ body.sheet-page--otherscape {
 /* Dark surfaces for theme cards and the loadout/crew boxes — replace the
    cream-on-grey base CSS backgrounds with a deep blue-grey one shade
    lighter than the page (raised, not sunken). The border uses the
-   already-light --rule token so it picks up from the palette flip above. */
+   already-light --rule token so it picks up from the palette flip above.
+   Must be fully opaque: WeasyPrint composites a translucent parent
+   background over its children (banners, icons), which washes saturated
+   header WebPs down to muddy browns (~15% of the banner colour over the
+   card fill). LitM's light cream rgba does not show the bug as strongly. */
 .sheet-page--otherscape .theme,
 .sheet-page--otherscape .inventory-box,
 .sheet-page--otherscape .fellowship-box {
-  background: rgba(30, 35, 42, 0.85);
+  background: #1e232a;
 }
 
 /* OTHERSCAPE wordmark — translucent footer label in the bottom-right of
@@ -256,9 +260,8 @@ body.sheet-page--otherscape::after {
 }
 
 /* Loadout and Crew Relationships banners share the dusty blue-grey texture
-   (in LitM both use the tan parchment header-backpack.webp). The icons next
-   to the labels (loadout / crew) come from the GameProfile via inline
-   background-image on the template's <span class="icon"> element. */
+   (in LitM both use the tan parchment header-backpack.webp). Icons use the
+   same <img class="icon"> pattern as theme banners (see game_icon macro). */
 .sheet-page--otherscape .backpack-box   .block-heading,
 .sheet-page--otherscape .fellowship-box .block-heading {
   background: url("../images/header-crew.webp") center/100% 100% no-repeat;
