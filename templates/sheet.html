@@ -26,12 +26,21 @@
      alt="">
 {%- endmacro %}
 
-{% macro tag_row(text, kind='power', blank=False, show_checkbox=True) -%}
-<li class="tag-row tag-row--{{ kind }}{{ ' tag-row--blank' if blank }}{{ ' tag-row--no-checkbox' if not show_checkbox }}">
-  <span class="tag-text">{{ text or '' }}</span>
-  {% if show_checkbox %}
-  {{ game_icon(game.burn_icon, base_class='checkbox') }}
-  {% endif %}
+{% macro game_image(filename, extra_class='bar-bg') -%}
+<img class="{{ extra_class }}"
+     src="{{ ('static/images/' + filename) if standalone else url_for('static', filename='images/' + filename) }}"
+     alt="">
+{%- endmacro %}
+
+{% macro tag_row(text, kind='power', blank=False, show_checkbox=True, bar_image='') -%}
+<li class="tag-row tag-row--{{ kind }}{{ ' tag-row--blank' if blank }}{{ ' tag-row--no-checkbox' if not show_checkbox }}{{ ' tag-row--bar' if bar_image }}">
+  {% if bar_image %}{{ game_image(bar_image) }}{% endif %}
+  <div class="tag-row__content">
+    <span class="tag-text">{{ text or '' }}</span>
+    {% if show_checkbox %}
+    {{ game_icon(game.burn_icon, base_class='checkbox') }}
+    {% endif %}
+  </div>
 </li>
 {%- endmacro %}
 
@@ -118,21 +127,27 @@
       <article class="theme theme--{{ tt.id }}">
 
         <header class="theme__banner">
-          {{ game_icon(tt.icon, 'theme__icon icon--' + tt.id) }}
-          <span class="theme__category">{{ theme.category or tt.label }}</span>
+          {{ game_image(tt.banner) }}
+          <div class="theme__banner__content">
+            {{ game_icon(tt.icon, 'theme__icon icon--' + tt.id) }}
+            <span class="theme__category">{{ theme.category or tt.label }}</span>
+          </div>
         </header>
 
-        <h3 class="theme__title">
-          <span class="tag-text">{{ theme.title }}</span>
-          {{ game_icon(game.burn_icon, base_class='checkbox') }}
+        <h3 class="theme__title{{ ' theme__title--bar' if tt.tag_bar }}">
+          {% if tt.tag_bar %}{{ game_image(tt.tag_bar) }}{% endif %}
+          <div class="theme__title__content">
+            <span class="tag-text">{{ theme.title }}</span>
+            {{ game_icon(game.burn_icon, base_class='checkbox') }}
+          </div>
         </h3>
 
         <ul class="tag-list">
           {% for tag in theme.power_tags %}
-            {{ tag_row(tag, kind='power', blank=(not tag)) }}
+            {{ tag_row(tag, kind='power', blank=(not tag), bar_image=tt.tag_bar) }}
           {% endfor %}
           {% for w in theme.weakness_tags %}
-            {{ tag_row(w, kind='weakness', show_checkbox=False, blank=(not w)) }}
+            {{ tag_row(w, kind='weakness', show_checkbox=False, blank=(not w), bar_image=game.weakness_bar) }}
           {% endfor %}
         </ul>
 

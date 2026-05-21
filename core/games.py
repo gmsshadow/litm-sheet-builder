@@ -27,6 +27,7 @@ class ThemeType:
     color: str               # hex color used for the theme's accent
     icon: str                # filename in static/icons/ (e.g. "origin.svg")
     banner: str              # filename in static/images/ (e.g. "header-origin.webp")
+    tag_bar: str = ""        # selection-bar image for power tags / title (Otherscape)
     quest_label: str = "Quest"   # what this theme's motto field is called (LitM: always "Quest", Otherscape: per-theme)
 
 
@@ -54,6 +55,7 @@ class GameProfile:
     fellowship_tag_label: str        # "Relationship Tag"
     fellowship_icon: str = ""        # icon filename for the fellowship banner ("" = no icon)
     burn_icon: str = "burn-scratch-empty.svg"  # scratch marker on tags / theme title
+    weakness_bar: str = ""           # selection-bar image for weakness tags (Otherscape)
     has_promise: bool = True         # whether the Promise pip track is shown
     promise_label: str = "Promise"
     promise_size: int = 5            # number of promise pips
@@ -119,9 +121,9 @@ OTHERSCAPE = GameProfile(
     id="otherscape",
     name="Otherscape",
     theme_types=[
-        ThemeType(id="self",   label="Self",   color="#d01c58", icon="self.png",   banner="header-self.webp",   quest_label="Identity"),
-        ThemeType(id="noise",  label="Noise",  color="#02b7cc", icon="noise.png",  banner="header-noise.webp",  quest_label="Itch"),
-        ThemeType(id="mythos", label="Mythos", color="#7452a2", icon="mythos.png", banner="header-mythos.webp", quest_label="Ritual"),
+        ThemeType(id="self",   label="Self",   color="#d01c58", icon="self.png",   banner="header-self.webp",   tag_bar="select-bar-self.webp",   quest_label="Identity"),
+        ThemeType(id="noise",  label="Noise",  color="#02b7cc", icon="noise.png",  banner="header-noise.webp",  tag_bar="select-bar-noise.webp",  quest_label="Itch"),
+        ThemeType(id="mythos", label="Mythos", color="#7452a2", icon="mythos.png", banner="header-mythos.webp", tag_bar="select-bar-mythos.webp", quest_label="Ritual"),
     ],
     tracks=[
         Track(id="upgrade", label="Upgrade"),
@@ -134,6 +136,7 @@ OTHERSCAPE = GameProfile(
     fellowship_tag_label="Relationship Tag",
     fellowship_icon="crew.svg",
     burn_icon="burn-neutral-empty.svg",
+    weakness_bar="select-bar-weakness.webp",
     has_promise=False,
     background="bg-otherscape-metallic.webp",
     stylesheet="sheet-otherscape.css",

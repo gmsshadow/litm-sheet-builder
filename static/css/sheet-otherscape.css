@@ -132,36 +132,16 @@ body.sheet-page--otherscape::after {
   --mythos:  #7452a2;
 }
 
-/* Theme banners — replace the LitM banner URLs with the recoloured ones. */
-.sheet-page--otherscape .theme--self    .theme__banner { background: url("../images/header-self.webp")   center/100% 100% no-repeat; }
-.sheet-page--otherscape .theme--noise   .theme__banner { background: url("../images/header-noise.webp")  center/100% 100% no-repeat; }
-.sheet-page--otherscape .theme--mythos  .theme__banner { background: url("../images/header-mythos.webp") center/100% 100% no-repeat; }
-
-/* Tag-row left-accent: matches the theme type colour. */
-/* Power tag bars — coloured "selection bar" backgrounds per theme type.
-   The bar image stretches to fill the row, so multi-line tags grow it
-   vertically. The bar already supplies the theme-type colour, so we drop
-   the LitM left-border accent and use uniform horizontal padding instead.
-   Burn-scratch icon (right edge) sits on top of the coloured bar at the
-   row's flex position. */
+/* Theme banners and tag bars use <img class="bar-bg"> in the template
+   (see game_image macro) so WeasyPrint keeps full saturation. Padding
+   and bar colours are unchanged; text sits in __content above the image. */
 .sheet-page--otherscape .tag-row--power {
   border-left: none;
   padding: 0.04in 0.08in;
 }
-.sheet-page--otherscape .theme--self   .tag-row--power { background: url("../images/select-bar-self.webp")   center/100% 100% no-repeat; }
-.sheet-page--otherscape .theme--noise  .tag-row--power { background: url("../images/select-bar-noise.webp")  center/100% 100% no-repeat; }
-.sheet-page--otherscape .theme--mythos .tag-row--power { background: url("../images/select-bar-mythos.webp") center/100% 100% no-repeat; }
-
-/* Title tag bar — the theme title is itself a tag, so it gets the same
-   coloured bar as the power tags below it. Padding is added so the text
-   and burn-scratch icon don't touch the bar's end caps; the existing
-   margin keeps the bar inset from the theme card's edges. */
-.sheet-page--otherscape .theme__title {
+.sheet-page--otherscape .theme__title--bar {
   padding: 0.04in 0.08in;
 }
-.sheet-page--otherscape .theme--self   .theme__title { background: url("../images/select-bar-self.webp")   center/100% 100% no-repeat; }
-.sheet-page--otherscape .theme--noise  .theme__title { background: url("../images/select-bar-noise.webp")  center/100% 100% no-repeat; }
-.sheet-page--otherscape .theme--mythos .theme__title { background: url("../images/select-bar-mythos.webp") center/100% 100% no-repeat; }
 
 /* Tag text on the coloured bars uses white for readability against the
    dark magenta / cyan / purple bars. Applies to power tag rows and the
@@ -172,13 +152,8 @@ body.sheet-page--otherscape::after {
   color: #fff;
 }
 
-/* Weakness tag — olive bar with diagonal stripes, same in every theme.
-   The dashed top separator from base CSS is dropped since the bar's edge
-   already establishes the visual break. Text goes white for contrast
-   against the olive. The chevron ::before marker is hidden because the
-   striped bar is itself a sufficient "this is a weakness" cue. */
-.sheet-page--otherscape .tag-row--weakness {
-  background: url("../images/select-bar-weakness.webp") center/100% 100% no-repeat;
+/* Weakness tag — olive bar via game.weakness_bar <img>. */
+.sheet-page--otherscape .tag-row--weakness.tag-row--bar {
   border-top: none;
   padding: 0.04in 0.08in;
   color: #fff;
@@ -283,7 +258,7 @@ body.sheet-page--otherscape::after {
    row-reverse swaps them visually, and space-between separates them across
    the available width. The padding on each banner provides the side insets
    so neither hugs the brushwork edge. */
-.sheet-page--otherscape .theme__banner,
+.sheet-page--otherscape .theme__banner__content,
 .sheet-page--otherscape .backpack-box   .block-heading,
 .sheet-page--otherscape .fellowship-box .block-heading {
   flex-direction: row-reverse;

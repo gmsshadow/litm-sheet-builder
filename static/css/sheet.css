@@ -385,7 +385,24 @@ body.sheet-page {
   line-height: 1.25;
 }
 
+/* Decorative bar/header images sit behind text via <img class="bar-bg"> so
+   WeasyPrint does not dim CSS background-images under translucent parents. */
+.bar-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .theme__banner {
+  position: relative;
+}
+.theme__banner__content {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -397,22 +414,25 @@ body.sheet-page {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-/* Each Might-level banner uses a tonal painted-texture image rather than a
-   flat colour. background-size: 100% 100% stretches the 250x30 source to
-   fill the banner regardless of card width. */
-.theme--origin    .theme__banner { background: url("../images/header-origin.webp")    center/100% 100% no-repeat; }
-.theme--adventure .theme__banner { background: url("../images/header-adventure.webp") center/100% 100% no-repeat; }
-.theme--greatness .theme__banner { background: url("../images/header-greatness.webp") center/100% 100% no-repeat; }
 
 .theme__title {
-  display: flex;
-  align-items: center;
-  gap: 0.07in;
   font-family: var(--font-display);
   font-size: 11pt;
   line-height: 1.15;
   margin: 0.06in 0.1in 0.04in;
   color: var(--ink);
+}
+.theme__title--bar {
+  position: relative;
+}
+.theme__title__content {
+  display: flex;
+  align-items: center;
+  gap: 0.07in;
+}
+.theme__title--bar .theme__title__content {
+  position: relative;
+  z-index: 1;
 }
 .theme__title .tag-text { flex: 1 1 auto; word-break: break-word; }
 
@@ -425,15 +445,24 @@ body.sheet-page {
 }
 
 .tag-row {
-  display: flex;
-  align-items: center;
-  gap: 0.07in;
   padding: 0.025in 0;
   font-family: var(--font-tag);
   font-style: italic;
   font-size: 11pt;
   line-height: 1.25;
   min-height: 1.25em;            /* keep empty rows visible */
+}
+.tag-row--bar {
+  position: relative;
+}
+.tag-row__content {
+  display: flex;
+  align-items: center;
+  gap: 0.07in;
+}
+.tag-row--bar .tag-row__content {
+  position: relative;
+  z-index: 1;
 }
 
 .tag-row .tag-text {
