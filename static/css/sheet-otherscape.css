@@ -133,14 +133,21 @@ body.sheet-page--otherscape::after {
 }
 
 /* Theme banners and tag bars use <img class="bar-bg"> in the template
-   (see game_image macro) so WeasyPrint keeps full saturation. Padding
-   and bar colours are unchanged; text sits in __content above the image. */
+   (see game_image macro) so WeasyPrint keeps full saturation. Inset text
+   on the __content layer so it clears the bar art's left 3D lip; the bar
+   image itself stays full-bleed within the row. */
 .sheet-page--otherscape .tag-row--power {
   border-left: none;
-  padding: 0.04in 0.08in;
+  padding: 0;
 }
 .sheet-page--otherscape .theme__title--bar {
-  padding: 0.04in 0.08in;
+  padding: 0;
+}
+.sheet-page--otherscape .tag-row--bar .tag-row__content,
+.sheet-page--otherscape .theme__title--bar .theme__title__content {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.055in 0.08in 0.035in 0.13in;  /* extra top + left vs old 0.04 / 0.08 */
 }
 
 /* Tag text on the coloured bars uses white for readability against the
@@ -155,7 +162,7 @@ body.sheet-page--otherscape::after {
 /* Weakness tag — olive bar via game.weakness_bar <img>. */
 .sheet-page--otherscape .tag-row--weakness.tag-row--bar {
   border-top: none;
-  padding: 0.04in 0.08in;
+  padding: 0;
   color: #fff;
 }
 .sheet-page--otherscape .tag-row--weakness::before {
@@ -206,61 +213,44 @@ body.sheet-page--otherscape::after {
   width: 28px;
   height: 28px;
 }
-.sheet-page--otherscape .backpack-box   .block-heading .icon,
-.sheet-page--otherscape .fellowship-box .block-heading .icon {
+.sheet-page--otherscape .block-heading__content .icon {
   width: 22px;
   height: 22px;
+  flex: 0 0 22px;
 }
 .sheet-page--otherscape .checkbox {
   width: 16px;
   height: 16px;
   flex: 0 0 16px;
 }
-.sheet-page--otherscape .backpack-list li::after {
+/* Loadout rows — bar + burn flame via <img> (game.loadout_bar, game.burn_icon). */
+.sheet-page--otherscape .backpack-list__item--bar {
+  color: #fff;
+}
+.sheet-page--otherscape .backpack-list__item--bar .backpack-list__content {
+  padding: 0.055in 0.08in 0.035in 0.13in;
+}
+.sheet-page--otherscape .backpack-list__item--bar .backpack-list__num {
+  color: inherit;
+}
+.sheet-page--otherscape .backpack-list__content .checkbox {
   width: 14px;
   height: 14px;
   flex: 0 0 14px;
 }
 
-/* Loadout and Crew Relationships banners share the dusty blue-grey texture
-   (in LitM both use the tan parchment header-backpack.webp). Icons use the
-   same <img class="icon"> pattern as theme banners (see game_icon macro). */
-.sheet-page--otherscape .backpack-box   .block-heading,
-.sheet-page--otherscape .fellowship-box .block-heading {
-  background: url("../images/header-crew.webp") center/100% 100% no-repeat;
-}
-
-/* Otherscape burn marker on theme tags / title comes from game.burn_icon via
-   <img class="checkbox"> (see template). Loadout rows still use ::after. */
-.sheet-page--otherscape .backpack-list li::after {
-  background-image: url("../icons/burn-neutral-empty.svg");
-}
-
-/* Loadout items each get a blue-grey "neutral" selection bar background
-   for the cyberpunk aesthetic. The dotted underline from base CSS is
-   dropped since the bar's edges provide visual separation. Horizontal
-   padding insets the number, text, and burn icon from the bar's end
-   caps. Number and item text both go white for contrast. */
-.sheet-page--otherscape .backpack-list li {
-  background: url("../images/select-bar-neutral-toburn.webp") center/100% 100% no-repeat;
-  border-bottom: none;
-  padding-left: 0.08in;
-  padding-right: 0.08in;
-  color: #fff;
-}
-.sheet-page--otherscape .backpack-list li::before {
-  display: none;
-}
-
-/* Header layout — Otherscape pushes the title to the left edge and the
-   accompanying icon to the right edge. DOM order is [icon][text] for both
-   theme banners and the backpack/fellowship headings; flex-direction
-   row-reverse swaps them visually, and space-between separates them across
-   the available width. The padding on each banner provides the side insets
-   so neither hugs the brushwork edge. */
-.sheet-page--otherscape .theme__banner__content,
-.sheet-page--otherscape .backpack-box   .block-heading,
-.sheet-page--otherscape .fellowship-box .block-heading {
+/* Theme banners: DOM [icon][label], row-reverse → label left, icon right. */
+.sheet-page--otherscape .theme__banner__content {
   flex-direction: row-reverse;
   justify-content: space-between;
+}
+
+/* Loadout / relationships headers: label first in DOM, icon pinned far right. */
+.sheet-page--otherscape .block-heading__content {
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: space-between;
+}
+.sheet-page--otherscape .block-heading__label {
+  flex: 1 1 auto;
 }

@@ -63,6 +63,8 @@ class GameProfile:
     # Asset paths
     background: str = ""             # background image filename
     stylesheet: str = ""             # game-specific CSS file (e.g. "sheet-litm.css")
+    section_header: str = "header-backpack.webp"  # loadout + relationships banner
+    loadout_bar: str = ""            # selection-bar image per loadout row (Otherscape)
 
     # ---- helpers ----------------------------------------------------------
 
@@ -140,6 +142,8 @@ OTHERSCAPE = GameProfile(
     has_promise=False,
     background="bg-otherscape-metallic.webp",
     stylesheet="sheet-otherscape.css",
+    section_header="header-crew.webp",
+    loadout_bar="select-bar-neutral-toburn.webp",
 )
 
 

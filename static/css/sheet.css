@@ -204,26 +204,30 @@ body.sheet-page {
   overflow: hidden;                 /* clip the textured banner to the box border */
 }
 
-/* Backpack header now uses the same styling as the Might-level theme banners
-   — small cream uppercase text, centered, larger banner icon — but with its
-   own painted-texture background. Both share the .block-heading hooks so the
-   font family and base sizing are consistent. */
-.backpack-box .block-heading {
-  background: url("../images/header-backpack.webp") center/100% 100% no-repeat;
-  color: #f6ecd2;
+/* Loadout / relationships headers — bar art via <img class="bar-bg"> in the
+   template (game.section_header); label + icon sit in __content above it. */
+.block-heading {
+  position: relative;
   margin: 0;
-  padding: 0.05in 0.1in;
+  padding: 0;
   border-bottom: none;
+  color: #f6ecd2;
   font-family: var(--font-display);
   font-size: 9.5pt;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+.block-heading__content {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.08in;
+  padding: 0.05in 0.1in;
 }
-.backpack-box .block-heading .icon {
+.backpack-box .block-heading .icon,
+.fellowship-box .block-heading .icon {
   width: 18px;
   height: 18px;
 }
@@ -241,21 +245,31 @@ body.sheet-page {
   margin: 0;
   padding: 0;
   flex: 1 1 0;
-  counter-reset: backpack;
 }
-.backpack-list li {
-  counter-increment: backpack;
-  display: flex;
-  align-items: center;
-  gap: 0.05in;
+.backpack-list__item {
   min-height: 1.05em;
   padding: 0.015in 0;
   font-size: 10.5pt;
   line-height: 1.2;
   border-bottom: 1px dotted var(--rule);
 }
-.backpack-list li::before {
-  content: counter(backpack) ".";
+.backpack-list__item--bar {
+  position: relative;
+  padding: 0;
+  border-bottom: none;
+}
+.backpack-list__content {
+  display: flex;
+  align-items: center;
+  gap: 0.05in;
+}
+.backpack-list__item--bar .backpack-list__content {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+}
+.backpack-list__num {
   flex: 0 0 1.2em;
   color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
@@ -265,15 +279,10 @@ body.sheet-page {
   flex: 1 1 auto;
   word-break: break-word;
 }
-.backpack-list li::after {
-  content: "";
+.backpack-list__content .checkbox {
   width: 11px;
   height: 11px;
   flex: 0 0 11px;
-  background-image: url("../icons/burn-scratch-empty.svg");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
 }
 
 /* ---- Fellowship Relationship ------------------------------------------- */
@@ -289,25 +298,7 @@ body.sheet-page {
   height: 100%;
   overflow: hidden;
 }
-.fellowship-box .block-heading {
-  background: url("../images/header-backpack.webp") center/100% 100% no-repeat;
-  color: #f6ecd2;
-  margin: 0;
-  padding: 0.05in 0.1in;
-  border-bottom: none;
-  font-family: var(--font-display);
-  font-size: 9.5pt;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.08in;
-}
-.fellowship-box .block-heading .icon {
-  width: 18px;
-  height: 18px;
-}
+/* .block-heading / .block-heading__content defined above (shared with loadout). */
 
 .fellowship-grid {
   display: flex;
