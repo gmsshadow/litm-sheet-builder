@@ -585,6 +585,10 @@ body.sheet-page {
   background-repeat: no-repeat;
   background-position: center;
   vertical-align: middle;
+  /* object-fit takes effect when .icon is applied to an <img> element
+     (as we do for theme-banner icons). For <span> + background-image
+     it has no effect. Keeps non-square sources from being stretched. */
+  object-fit: contain;
 }
 .icon--origin    { background-image: url("../icons/origin.svg"); }
 .icon--adventure { background-image: url("../icons/adventure.svg"); }

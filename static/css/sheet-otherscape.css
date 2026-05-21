@@ -202,11 +202,22 @@ body.sheet-page--otherscape::after {
 .sheet-page--otherscape .theme--noise  .pip--filled { background: var(--noise);  border-color: var(--noise); }
 .sheet-page--otherscape .theme--mythos .pip--filled { background: var(--mythos); border-color: var(--mythos); }
 
-/* Theme-type icon background images. The SVGs ship a white fill, so they
-   read correctly on the coloured banners. */
-.sheet-page--otherscape .icon--self    { background-image: url("../icons/self.svg"); }
-.sheet-page--otherscape .icon--noise   { background-image: url("../icons/noise.svg"); }
-.sheet-page--otherscape .icon--mythos  { background-image: url("../icons/mythos.svg"); }
+/* Theme-type icon background images. These mirror the src attribute on the
+   <img class="icon icon--..."> element in the template — kept as a fallback
+   for browser preview and in case any other rendering path falls back to
+   the background. The PNGs ship pre-whitened (their RGB channels are
+   flattened to white, alpha preserved) so they read as bold white
+   silhouettes against the coloured banners — same legibility story as
+   LitM's SVG icons. The original coloured artwork is kept alongside each
+   file as <name>-color.png in case we ever want to switch back.
+
+   Note: in WeasyPrint, raster background-images inside this Otherscape
+   sheet are dimmed to ~30% brightness by an unidentified compositing
+   interaction between the dark body background and the theme-card
+   background. Rendering the icon via <img> avoids that path entirely. */
+.sheet-page--otherscape .icon--self    { background-image: url("../icons/self.png"); }
+.sheet-page--otherscape .icon--noise   { background-image: url("../icons/noise.png"); }
+.sheet-page--otherscape .icon--mythos  { background-image: url("../icons/mythos.png"); }
 
 /* Icon glow — adds a soft white halo around each icon's silhouette via
    filter: drop-shadow. Unlike box-shadow, drop-shadow follows the actual

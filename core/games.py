@@ -118,9 +118,9 @@ OTHERSCAPE = GameProfile(
     id="otherscape",
     name="Otherscape",
     theme_types=[
-        ThemeType(id="self",   label="Self",   color="#d01c58", icon="self.svg",   banner="header-self.webp",   quest_label="Identity"),
-        ThemeType(id="noise",  label="Noise",  color="#02b7cc", icon="noise.svg",  banner="header-noise.webp",  quest_label="Itch"),
-        ThemeType(id="mythos", label="Mythos", color="#7452a2", icon="mythos.svg", banner="header-mythos.webp", quest_label="Ritual"),
+        ThemeType(id="self",   label="Self",   color="#d01c58", icon="self.png",   banner="header-self.webp",   quest_label="Identity"),
+        ThemeType(id="noise",  label="Noise",  color="#02b7cc", icon="noise.png",  banner="header-noise.webp",  quest_label="Itch"),
+        ThemeType(id="mythos", label="Mythos", color="#7452a2", icon="mythos.png", banner="header-mythos.webp", quest_label="Ritual"),
     ],
     tracks=[
         Track(id="upgrade", label="Upgrade"),

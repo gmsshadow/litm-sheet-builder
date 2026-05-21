@@ -112,7 +112,9 @@
       <article class="theme theme--{{ tt.id }}">
 
         <header class="theme__banner">
-          <span class="theme__icon icon icon--{{ tt.id }}"></span>
+          <img class="theme__icon icon icon--{{ tt.id }}"
+               src="{{ ('static/icons/' + tt.icon) if standalone else url_for('static', filename='icons/' + tt.icon) }}"
+               alt="">
           <span class="theme__category">{{ theme.category or tt.label }}</span>
         </header>
 
