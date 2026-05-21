@@ -1,0 +1,132 @@
+{
+  "name": "Bumbler",
+  "descriptor": "AN INCOMPETENT BEEKEEPER AND MEADERY OWNER, HANGING ON BY SHEER LUCK",
+  "quote": "\"By the Lady, mister Alderman, I didn't mean to knock over the baker's flour! I mean it was just there all of a sudden, and before I knew it we were all covered in white powder. No, that has nothing to do with yesterday's incident. That barrel of rainwater shouldn't have rolled down the hill, I didn't intend for that to happen. I know, I know, the Wise\r\nOne is still patching up poor Hyacinth. I've sent her honey to apologize. You know how it is - I'm so sorry. Come by the meadery and we'll drink to better days. That's Good Ol' Bumbler for ya...!\"",
+  "portrait_path": "images/bumbler.png",
+  "backpack": [
+    "A bee’s nest (occupied)",
+    "A jar of honey",
+    "Netted cape and cowl",
+    "Hammer and Nails",
+    "Fragile pottery",
+    "Rehearsed retort",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "fellowship_companions": [
+    "Mira the Weaver",
+    "Old Brog",
+    "Kestrel",
+    "Sister Vala",
+    ""
+  ],
+  "fellowship_tags": [
+    "always patches my mistakes",
+    "distant kinsman",
+    "we share the same secret",
+    "she expects me to grow up",
+    ""
+  ],
+  "promise_pips": 2,
+  "themes": [
+    {
+      "theme_type": "origin",
+      "category": "Trait",
+      "title": "WALKING DISASTER",
+      "quest": "“I guess I am just a big ole bumbler.”",
+      "power_tags": [
+        "Topple something down",
+        "Narrowly escape harm",
+        ""
+      ],
+      "weakness_tags": [
+        "Not in my control"
+      ],
+      "quest_description": "It’s a known fact in the village: if Bumbler\r\ncomes your way, better turn around and\r\nmind your step. Everywhere Bumbler goes,\r\nstacks collapse and barrels roll, people trip\r\nand ladders fall. And to spite everyone, she\r\nsomehow walks away unscathed. For all her\r\ntowering form, wide frame, and clumsy gait,\r\nnothing of the devastation she sows ever seems\r\nto catch up to her.",
+      "special_improvements": [
+        "Moment to Shine: Once per session,\r\nwhen you act using tags from this theme, you\r\nmay ignore being Imperiled, or treat being\r\nExtremely Imperiled as being Imperiled.",
+        ""
+      ],
+      "pips": {
+        "abandon": 0,
+        "improve": 0,
+        "milestone": 0
+      }
+    },
+    {
+      "theme_type": "greatness",
+      "category": "Skill or TRade",
+      "title": "BEEKEEPER",
+      "quest": "“One day, this’ll be the most famous apiary of our dale!”",
+      "power_tags": [
+        "Sense tiny environmental changes",
+        "Gentle touch",
+        ""
+      ],
+      "weakness_tags": [
+        "Slow worker"
+      ],
+      "quest_description": "Sensitive and gentle, Bumblebee Meadows is\r\nan experienced beekeeper, owner of the Golden\r\nMeadows Apiary. She knows how to care for\r\nthese yellow-and-tan ambrosia-giving insects,\r\nsensitive to every little change in temperature,\r\nhumidity, and light around, and knowing their\r\nhierarchy and power structures (and by proxy,\r\nthose of human groups and cliques). She is also\r\nknowledgeable of every flower and plant a bee\r\ncan find in the Dales, its flavor and properties.",
+      "special_improvements": [
+        "Resourceful: When you camp or\r\nsojourn, if you dedicate your time to preparing\r\nor crafting something using your skill, you\r\nmay create an extra story tag in addition to the\r\nusual benefits.",
+        ""
+      ],
+      "pips": {
+        "abandon": 0,
+        "improve": 0,
+        "milestone": 0
+      }
+    },
+    {
+      "theme_type": "adventure",
+      "category": "Possessions",
+      "title": "MEADOWS MEADERY",
+      "quest": "“This place is where I feel I’m at my best.”",
+      "power_tags": [
+        "Jugs of frothing mead!",
+        "High-pressure barrels",
+        ""
+      ],
+      "weakness_tags": [
+        "Bumbler’s not around"
+      ],
+      "quest_description": "Along with the Golden Meadows Apiary,\r\nBumbler inherited a meadery, and continues\r\nto practice the brewing of fermented honey\r\nbeverages. The spacious shed holds dozens\r\nof barrels along the walls, while at the center\r\nBumbler hosts her customers on a straw-strewn\r\npacked dirt floor with a few tree stumps for\r\nseats and tables. Locals love to celebrate and\r\nlaugh here, as long as everyone survives the\r\nnight without bruises.",
+      "special_improvements": [
+        "Quartermaster: Members of your\r\nFellowship may treat jugs of frothing mead! as if it\r\nwere in their backpack, as long as it is possible\r\nfor you to hand it to them and let them use it.",
+        ""
+      ],
+      "pips": {
+        "abandon": 0,
+        "improve": 0,
+        "milestone": 0
+      }
+    },
+    {
+      "theme_type": "origin",
+      "category": "Circumstance",
+      "title": "VILLAGE FOOL",
+      "quest": "“If I laugh with them, maybe they’ll forgive everything I’ve broken...”",
+      "power_tags": [
+        "Ignore ridicule or shame",
+        "Get away with anything",
+        ""
+      ],
+      "weakness_tags": [
+        "The butt of many pranks"
+      ],
+      "quest_description": "Sadly, folk around Bumbler mock her\r\nclumsiness at her expense. She doesn’t care\r\n- her bees and meadery are more important\r\nto her than what people say - and so she\r\nreclaimed this status, to make people laugh\r\nor to take liberties others would not for\r\nfear of their reputation. But like with her\r\nmead, she’s feeling some bubbling pressure\r\nfomenting in her, secretly fearing the day\r\nwhen enough will be enough.",
+      "special_improvements": [
+        "Expected Role: Once per session,\r\nbefore you take a social action befitting a village\r\nfool, you may gain amusing-2.",
+        ""
+      ],
+      "pips": {
+        "abandon": 0,
+        "improve": 0,
+        "milestone": 0
+      }
+    }
+  ],
+  "game": "litm"
+}

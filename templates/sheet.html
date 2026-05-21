@@ -1,9 +1,9 @@
-{# Character sheet template. Used for both the on-screen preview and the PDF
-   export (via WeasyPrint). Keep this standalone — no template inheritance,
-   no JS, no external requests at render time. CSS lives in static/css/sheet.css.
+{# Character sheet template — game-agnostic.
 
-   A "tag row" is the unit: an empty/filled checkbox (for marking the tag off
-   on the printed sheet) and the tag text or a blank line for handwriting. #}
+   All game-specific bits (theme types, track names, section labels, asset
+   paths) come from the `game` profile passed in alongside `character`. The
+   per-game CSS file (game.stylesheet) layers on top of the shared sheet.css
+   to provide game-specific colors, banner textures, and background. #}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,9 +13,12 @@
     <style>{{ css_inline|safe }}</style>
   {% else %}
     <link rel="stylesheet" href="{{ 'static/css/sheet.css' if standalone else url_for('static', filename='css/sheet.css') }}">
+    {% if game.stylesheet %}
+      <link rel="stylesheet" href="{{ 'static/css/' + game.stylesheet if standalone else url_for('static', filename='css/' + game.stylesheet) }}">
+    {% endif %}
   {% endif %}
 </head>
-<body class="sheet-page">
+<body class="sheet-page sheet-page--{{ game.id }}">
 
 {% macro tag_row(text, kind='power', blank=False, show_checkbox=True) -%}
 <li class="tag-row tag-row--{{ kind }}{{ ' tag-row--blank' if blank }}{{ ' tag-row--no-checkbox' if not show_checkbox }}">
@@ -30,7 +33,7 @@
 
   <div class="top-row">
 
-    {# --- LEFT: portrait + character info side by side ------------------ #}
+    {# --- LEFT: portrait + character info ------------------------------- #}
     <section class="character-block">
       <div class="portrait-frame">
         {% if character.portrait_path %}
@@ -50,11 +53,11 @@
       </div>
     </section>
 
-    {# --- MIDDLE: backpack ----------------------------------------------- #}
+    {# --- MIDDLE: backpack / loadout ------------------------------------ #}
     <section class="inventory-block">
       <div class="inventory-box backpack-box">
         <h3 class="block-heading backpack-box__heading">
-          <span class="icon icon--backpack"></span>Backpack
+          <span class="icon" style="background-image: url('{{ ('static/icons/' + game.backpack_icon) if standalone else url_for('static', filename='icons/' + game.backpack_icon) }}')"></span>{{ game.backpack_label }}
         </h3>
         <div class="backpack-grid">
           <ol class="backpack-list">
@@ -66,14 +69,19 @@
       </div>
     </section>
 
-    {# --- RIGHT: Fellowship Relationship -------------------------------- #}
+    {# --- RIGHT: fellowship / crew -------------------------------------- #}
     <section class="fellowship-block">
       <div class="inventory-box fellowship-box">
-        <h3 class="block-heading fellowship-box__heading">Fellowship Relationship</h3>
+        <h3 class="block-heading fellowship-box__heading">
+          {% if game.fellowship_icon %}
+            <span class="icon" style="background-image: url('{{ ('static/icons/' + game.fellowship_icon) if standalone else url_for('static', filename='icons/' + game.fellowship_icon) }}')"></span>
+          {% endif %}
+          {{ game.fellowship_label }}
+        </h3>
         <div class="fellowship-grid">
           <div class="fellowship-row fellowship-row--header">
-            <div class="fellowship-cell">Companion</div>
-            <div class="fellowship-cell">Relationship Tag</div>
+            <div class="fellowship-cell">{{ game.fellowship_companion_label }}</div>
+            <div class="fellowship-cell">{{ game.fellowship_tag_label }}</div>
           </div>
           {% for i in range(5) %}
             <div class="fellowship-row">
@@ -82,27 +90,30 @@
             </div>
           {% endfor %}
         </div>
-        <div class="promise">
-          <span class="promise__label">Promise</span>
-          <span class="promise__pips">
-            {% for i in range(5) %}
-              <span class="promise__pip{{ ' promise__pip--filled' if i < character.promise_pips else '' }}"></span>
-            {% endfor %}
-          </span>
-        </div>
+        {% if game.has_promise %}
+          <div class="promise">
+            <span class="promise__label">{{ game.promise_label }}</span>
+            <span class="promise__pips">
+              {% for i in range(game.promise_size) %}
+                <span class="promise__pip{{ ' promise__pip--filled' if i < character.promise_pips else '' }}"></span>
+              {% endfor %}
+            </span>
+          </div>
+        {% endif %}
       </div>
     </section>
 
   </div>{# /.top-row #}
 
-  {# --- BOTTOM ROW: 4 theme cards -------------------------------------- #}
+  {# --- BOTTOM ROW: 4 theme cards ------------------------------------- #}
   <div class="themes-row">
     {% for theme in character.themes[:4] %}
-      <article class="theme theme--{{ theme.might_level.value }}">
+      {% set tt = game.theme_type(theme.theme_type) %}
+      <article class="theme theme--{{ tt.id }}">
 
         <header class="theme__banner">
-          <span class="theme__icon icon icon--{{ theme.might_level.icon }}"></span>
-          <span class="theme__category">{{ theme.category or theme.might_level.label }}</span>
+          <span class="theme__icon icon icon--{{ tt.id }}"></span>
+          <span class="theme__category">{{ theme.category or tt.label }}</span>
         </header>
 
         <h3 class="theme__title">
@@ -110,10 +121,6 @@
           <span class="checkbox"></span>
         </h3>
 
-        {# Power tags — variable length. Empty entries render as handwriting
-           underlines so players can write in tags gained through play. The
-           weakness rows sit at the bottom of the same list, separated by a
-           dashed divider on the first weakness row. #}
         <ul class="tag-list">
           {% for tag in theme.power_tags %}
             {{ tag_row(tag, kind='power', blank=(not tag)) }}
@@ -124,16 +131,12 @@
         </ul>
 
         <div class="theme__tracks">
-          {% for track, count in [
-              ('Abandon', theme.abandon_pips),
-              ('Improve', theme.improve_pips),
-              ('Milestone', theme.milestone_pips),
-          ] %}
+          {% for track in game.tracks %}
             <div class="track">
-              <span class="track__label">{{ track }}</span>
+              <span class="track__label">{{ track.label }}</span>
               <span class="track__pips">
                 {% for i in range(3) %}
-                  <span class="pip{{ ' pip--filled' if i < count else '' }}"></span>
+                  <span class="pip{{ ' pip--filled' if i < theme.pip_count(track.id) else '' }}"></span>
                 {% endfor %}
               </span>
             </div>

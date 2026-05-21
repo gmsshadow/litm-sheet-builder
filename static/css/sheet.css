@@ -209,7 +209,7 @@ body.sheet-page {
    own painted-texture background. Both share the .block-heading hooks so the
    font family and base sizing are consistent. */
 .backpack-box .block-heading {
-  background: url("../images/header-backpack.webp") center/100% 100% no-repeat var(--paper-edge);
+  background: url("../images/header-backpack.webp") center/100% 100% no-repeat;
   color: #f6ecd2;
   margin: 0;
   padding: 0.05in 0.1in;
@@ -290,7 +290,7 @@ body.sheet-page {
   overflow: hidden;
 }
 .fellowship-box .block-heading {
-  background: url("../images/header-backpack.webp") center/100% 100% no-repeat var(--paper-edge);
+  background: url("../images/header-backpack.webp") center/100% 100% no-repeat;
   color: #f6ecd2;
   margin: 0;
   padding: 0.05in 0.1in;
@@ -299,8 +299,14 @@ body.sheet-page {
   font-size: 9.5pt;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  text-align: center;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.08in;
+}
+.fellowship-box .block-heading .icon {
+  width: 18px;
+  height: 18px;
 }
 
 .fellowship-grid {
@@ -394,9 +400,9 @@ body.sheet-page {
 /* Each Might-level banner uses a tonal painted-texture image rather than a
    flat colour. background-size: 100% 100% stretches the 250x30 source to
    fill the banner regardless of card width. */
-.theme--origin    .theme__banner { background: url("../images/header-origin.webp")    center/100% 100% no-repeat var(--origin); }
-.theme--adventure .theme__banner { background: url("../images/header-adventure.webp") center/100% 100% no-repeat var(--adventure); }
-.theme--greatness .theme__banner { background: url("../images/header-greatness.webp") center/100% 100% no-repeat var(--greatness); }
+.theme--origin    .theme__banner { background: url("../images/header-origin.webp")    center/100% 100% no-repeat; }
+.theme--adventure .theme__banner { background: url("../images/header-adventure.webp") center/100% 100% no-repeat; }
+.theme--greatness .theme__banner { background: url("../images/header-greatness.webp") center/100% 100% no-repeat; }
 
 .theme__title {
   display: flex;
@@ -583,7 +589,6 @@ body.sheet-page {
 .icon--origin    { background-image: url("../icons/origin.svg"); }
 .icon--adventure { background-image: url("../icons/adventure.svg"); }
 .icon--greatness { background-image: url("../icons/greatness.svg"); }
-.icon--backpack  { background-image: url("../icons/backpack.svg"); }
 
 /* The Might-level icons (origin/adventure/greatness) are authored white so
    they read directly against the coloured banner backgrounds — no filter

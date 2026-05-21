@@ -2,14 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>LitM Sheet Builder</title>
+  <title>{{ game.name }} — Sheet Builder</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
 </head>
 <body>
 
 <header class="app-header">
-  <h1>Legend in the Mist — Sheet Builder</h1>
+  <h1>{{ game.name }} — Sheet Builder</h1>
   <div class="actions">
+    <select id="game-select" class="char-load" title="Switch game">
+      {% for g in games %}
+        <option value="{{ g.id }}" {% if g.id == game.id %}selected{% endif %}>{{ g.name }}</option>
+      {% endfor %}
+    </select>
     <select id="char-load" class="char-load" title="Open a saved character">
       <option value="">Open saved character…</option>
       <option value="" disabled>──────────</option>
@@ -27,6 +32,9 @@
 <div class="layout">
 
 <form id="character-form" class="editor" autocomplete="off">
+  {# The current game is submitted as a hidden field so the server can route
+     the save/preview/pdf to the right game profile. #}
+  <input type="hidden" name="game" value="{{ game.id }}">
 
   <fieldset class="block">
     <legend>Character</legend>
@@ -39,7 +47,7 @@
   </fieldset>
 
   <fieldset class="block">
-    <legend>Backpack (10 slots)</legend>
+    <legend>{{ game.backpack_label }} (10 slots)</legend>
     <div class="backpack-grid-edit">
       {% for slot in character.backpack %}
         <label>#{{ loop.index }} <input type="text" name="backpack_{{ loop.index0 }}" value="{{ slot }}"></label>
@@ -48,40 +56,43 @@
   </fieldset>
 
   <fieldset class="block">
-    <legend>Fellowship Relationship (5 rows)</legend>
+    <legend>{{ game.fellowship_label }} (5 rows)</legend>
     <div class="fellowship-edit">
       <div class="fellowship-edit-header">
-        <span>Companion</span>
-        <span>Relationship Tag</span>
+        <span>{{ game.fellowship_companion_label }}</span>
+        <span>{{ game.fellowship_tag_label }}</span>
       </div>
       {% for i in range(5) %}
         <div class="fellowship-edit-row">
-          <input type="text" name="fellowship_companion_{{ i }}" value="{{ character.fellowship_companions[i] }}" placeholder="companion name">
-          <input type="text" name="fellowship_tag_{{ i }}" value="{{ character.fellowship_tags[i] }}" placeholder="relationship tag">
+          <input type="text" name="fellowship_companion_{{ i }}" value="{{ character.fellowship_companions[i] }}" placeholder="{{ game.fellowship_companion_label|lower }}">
+          <input type="text" name="fellowship_tag_{{ i }}" value="{{ character.fellowship_tags[i] }}" placeholder="{{ game.fellowship_tag_label|lower }}">
         </div>
       {% endfor %}
     </div>
-    <label class="pips-label">Promise pips
-      <input type="number" min="0" max="5" name="promise_pips" value="{{ character.promise_pips }}">
-    </label>
+    {% if game.has_promise %}
+      <label class="pips-label">{{ game.promise_label }} pips
+        <input type="number" min="0" max="{{ game.promise_size }}" name="promise_pips" value="{{ character.promise_pips }}">
+      </label>
+    {% endif %}
   </fieldset>
 
   {% for theme in character.themes[:4] %}
     {% set ti = loop.index0 %}
-    <fieldset class="block theme-block">
+    {% set tt = game.theme_type(theme.theme_type) %}
+    <fieldset class="block theme-block" data-theme-index="{{ ti }}">
       <legend>Theme {{ loop.index }}</legend>
-      <label>Might level
-        <select name="theme{{ ti }}_might_level">
-          {% for level in might_levels %}
-            <option value="{{ level.value }}" {% if theme.might_level == level %}selected{% endif %}>{{ level.label }}</option>
+      <label>Theme type
+        <select name="theme{{ ti }}_theme_type" class="theme-type-select" data-theme-index="{{ ti }}">
+          {% for opt in game.theme_types %}
+            <option value="{{ opt.id }}"
+                    data-quest-label="{{ opt.quest_label }}"
+                    {% if theme.theme_type == opt.id %}selected{% endif %}>{{ opt.label }}</option>
           {% endfor %}
         </select>
       </label>
       <label>Category <input type="text" name="theme{{ ti }}_category" value="{{ theme.category }}" placeholder="e.g. Trait, Past, Magic"></label>
       <label>Title <input type="text" name="theme{{ ti }}_title" value="{{ theme.title }}" placeholder="theme title"></label>
 
-      {# Power tags — variable, 2..9 rows, +/- controls. The data-* attributes
-         drive the JS for row add/remove. #}
       <div class="tag-edit-group">
         <div class="tag-edit-group-label">
           Power tags
@@ -118,7 +129,12 @@
         </div>
       </div>
 
-      <label>Quest <input type="text" name="theme{{ ti }}_quest" value="{{ theme.quest }}" placeholder="the italic quest motto"></label>
+      {# The "Quest" field's label changes based on theme type. For LitM all
+         theme types use "Quest"; for Otherscape it's Identity/Itch/Ritual. #}
+      <label class="quest-field">
+        <span class="quest-label" data-theme-index="{{ ti }}">{{ tt.quest_label }}</span>
+        <input type="text" name="theme{{ ti }}_quest" value="{{ theme.quest }}" placeholder="the italic motto / quest / identity">
+      </label>
       <label>Quest description <textarea name="theme{{ ti }}_quest_description" rows="3">{{ theme.quest_description }}</textarea></label>
 
       <div class="tag-edit-group">
@@ -139,10 +155,13 @@
         </div>
       </div>
 
+      {# Pip tracks: one per track defined in the game profile. #}
       <div class="row pips">
-        <label>Abandon pips <input type="number" min="0" max="3" name="theme{{ ti }}_abandon_pips" value="{{ theme.abandon_pips }}"></label>
-        <label>Improve pips <input type="number" min="0" max="3" name="theme{{ ti }}_improve_pips" value="{{ theme.improve_pips }}"></label>
-        <label>Milestone pips <input type="number" min="0" max="3" name="theme{{ ti }}_milestone_pips" value="{{ theme.milestone_pips }}"></label>
+        {% for track in game.tracks %}
+          <label>{{ track.label }} pips
+            <input type="number" min="0" max="3" name="theme{{ ti }}_pip_{{ track.id }}" value="{{ theme.pip_count(track.id) }}">
+          </label>
+        {% endfor %}
       </div>
     </fieldset>
   {% endfor %}
@@ -156,7 +175,6 @@
 </div>
 
 <script>
-  // Minimal glue: post the form to /preview, /pdf, /save. No build step.
   const form = document.getElementById("character-form");
   const frame = document.getElementById("preview-frame");
 
@@ -188,8 +206,7 @@
     alert(out.ok ? "Saved as " + out.path : "Save failed");
   });
 
-  // Row add/remove buttons. Buttons carry the target container id and the
-  // base input name (so the new row's input name is `<base>_<index>`).
+  // Row add/remove buttons.
   document.querySelectorAll(".row-btn--add").forEach(btn => {
     btn.addEventListener("click", () => {
       const container = document.getElementById(btn.dataset.target);
@@ -221,25 +238,44 @@
     });
   });
 
-  // Track whether the user has touched the form since load, so the "Open"
-  // dropdown can prompt before discarding unsaved changes.
+  // Theme type dropdown changes update the Quest label dynamically.
+  // (LitM: always "Quest"; Otherscape: Identity / Itch / Ritual per type.)
+  document.querySelectorAll(".theme-type-select").forEach(sel => {
+    sel.addEventListener("change", () => {
+      const idx = sel.dataset.themeIndex;
+      const opt = sel.options[sel.selectedIndex];
+      const lbl = document.querySelector(`.quest-label[data-theme-index="${idx}"]`);
+      if (lbl && opt.dataset.questLabel) {
+        lbl.textContent = opt.dataset.questLabel;
+      }
+    });
+  });
+
+  // Track whether the user has touched the form for the "discard unsaved" prompt.
   let formDirty = false;
   form.addEventListener("input", () => { formDirty = true; });
 
+  // Game switcher — reload the editor for the new game (URL is the source of truth).
+  document.getElementById("game-select").addEventListener("change", (e) => {
+    if (formDirty && !confirm("You have unsaved changes. Discard them and switch games?")) {
+      e.target.value = "{{ game.id }}";
+      return;
+    }
+    window.location = "/?game=" + encodeURIComponent(e.target.value);
+  });
+
   document.getElementById("char-load").addEventListener("change", (e) => {
     const slug = e.target.value;
-    // First option is the placeholder — re-selecting it is a no-op.
     if (e.target.selectedIndex === 0) return;
     if (formDirty && !confirm("You have unsaved changes. Discard them and open another character?")) {
-      // Revert the select to whatever was previously chosen.
       e.target.selectedIndex = 0;
       return;
     }
+    const base = "/?game=" + encodeURIComponent("{{ game.id }}");
     if (slug) {
-      window.location = "/?load=" + encodeURIComponent(slug);
+      window.location = base + "&load=" + encodeURIComponent(slug);
     } else {
-      // "New (blank)" option — load the bare editor.
-      window.location = "/";
+      window.location = base;
     }
   });
 

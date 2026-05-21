@@ -9,9 +9,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from litm.app import create_app
-from litm.models import Character
-from litm.render import render_sheet_pdf
+from core.app import create_app
+from core.models import Character
+from core.render import render_sheet_pdf
 
 
 def _cli_pdf(json_path: str, out_path: str | None = None) -> None:

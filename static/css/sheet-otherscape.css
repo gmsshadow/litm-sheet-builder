@@ -1,0 +1,291 @@
+/* ============================================================================
+   Otherscape — stylesheet overlays on top of sheet.css.
+
+   Loaded after sheet.css when the character's game is "otherscape".
+   Overrides:
+     - Body background (parchment → metallic grey)
+     - Theme accent colors (Origin/Adventure/Greatness → Self/Noise/Mythos)
+     - Theme banner image URLs
+     - Theme icon URLs
+     - Pip fill colors per theme type
+     - Typography (calligraphic serif → modern sans-serif)
+   ============================================================================ */
+
+/* Modern sans-serif fonts for the cyberpunk-myth aesthetic. MyriadPro is
+   the body / tag font; Roboto Black is the heavy display weight used for
+   headings, banners, and the character name. WeasyPrint embeds these in
+   the generated PDF. */
+@font-face {
+  font-family: "MyriadPro";
+  src: url("../fonts/MyriadPro-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("../fonts/Roboto-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+/* Page background: dark blue-grey base, metallic texture overlaid and
+   significantly darkened with a translucent dark layer. The result is a
+   moody cyberpunk page with subtle texture rather than the previous
+   medium-grey metallic look. */
+body.sheet-page--otherscape {
+  background:
+    linear-gradient(rgba(15, 18, 22, 0.7), rgba(15, 18, 22, 0.7)),
+    url("../images/bg-otherscape-metallic.webp") center/cover no-repeat,
+    #14171b;
+  position: relative;  /* anchor for the ::after OTHERSCAPE wordmark */
+  --font-body:    "MyriadPro", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Roboto", "Helvetica Neue", Arial, sans-serif;
+  --font-tag:     "MyriadPro", "Helvetica Neue", Arial, sans-serif;
+  /* Palette flip — surfaces go dark, ink goes light. Every CSS rule that
+     reads var(--ink), var(--ink-soft), var(--rule), var(--paper-shade)
+     picks up the dark-theme values automatically. */
+  --paper:        #14171b;
+  --paper-shade:  #2a2d33;
+  --paper-edge:   rgba(245, 240, 230, 0.15);
+  --rule:         rgba(245, 240, 230, 0.15);
+  --ink:          #f5f0e6;
+  --ink-soft:     #c8c4ba;
+}
+
+/* Dark surfaces for theme cards and the loadout/crew boxes — replace the
+   cream-on-grey base CSS backgrounds with a deep blue-grey one shade
+   lighter than the page (raised, not sunken). The border uses the
+   already-light --rule token so it picks up from the palette flip above. */
+.sheet-page--otherscape .theme,
+.sheet-page--otherscape .inventory-box,
+.sheet-page--otherscape .fellowship-box {
+  background: rgba(30, 35, 42, 0.85);
+}
+
+/* OTHERSCAPE wordmark — translucent footer label in the bottom-right of
+   each page. Positioned absolutely against the body (which is now
+   position: relative). pointer-events: none keeps it out of any click
+   targets even when this is opened in a browser. */
+body.sheet-page--otherscape::after {
+  content: "OTHERSCAPE";
+  position: absolute;
+  bottom: 0.18in;
+  right: 0.35in;
+  font-family: var(--font-display);
+  font-size: 10pt;
+  letter-spacing: 0.45em;
+  color: rgba(245, 240, 230, 0.25);
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+/* Character info — name, descriptor, quote — sits on the metallic grey
+   page (not on a cream theme card), so the dark LitM ink colour
+   disappears. Switch to a light cream that reads against the grey. Other
+   elements that use var(--ink) / var(--ink-soft) live inside the cream
+   theme cards, where dark text is still correct, so we override these
+   three specific selectors rather than the variables. */
+.sheet-page--otherscape .character-name {
+  /* Cyberpunk hero treatment — large size with a strong magenta glow. The
+     glow extends well outside the text box, so we need to make sure the
+     character-info container doesn't clip it (handled below). */
+  color: #f5f0e6;
+  font-size: 38pt;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-shadow:
+    0 0 10px rgba(208, 28, 88, 0.7),
+    0 0 22px rgba(208, 28, 88, 0.4),
+    0 0 36px rgba(208, 28, 88, 0.2);
+}
+.sheet-page--otherscape .character-info {
+  overflow: visible;  /* don't clip the character-name glow at the column edge */
+}
+.sheet-page--otherscape .descriptor { color: #d8d0c2; }
+
+/* Quote becomes a pull-quote — large, translucent, no border-left accent.
+   Sits like a watermark below the descriptor. */
+.sheet-page--otherscape .quote {
+  font-size: 14pt;
+  line-height: 1.3;
+  color: rgba(245, 240, 230, 0.5);
+  border-left: none;
+  padding: 0.05in 0;
+  font-weight: 400;
+}
+
+/* Square pips (LitM uses circles). One-property flip; works for both the
+   theme-card pip rows and the (LitM-only) Promise track. */
+.sheet-page--otherscape .pip,
+.sheet-page--otherscape .promise__pip {
+  border-radius: 0;
+}
+
+/* Theme palette — three Otherscape spheres. */
+.sheet-page--otherscape {
+  --self:    #d01c58;
+  --noise:   #02b7cc;
+  --mythos:  #7452a2;
+}
+
+/* Theme banners — replace the LitM banner URLs with the recoloured ones. */
+.sheet-page--otherscape .theme--self    .theme__banner { background: url("../images/header-self.webp")   center/100% 100% no-repeat; }
+.sheet-page--otherscape .theme--noise   .theme__banner { background: url("../images/header-noise.webp")  center/100% 100% no-repeat; }
+.sheet-page--otherscape .theme--mythos  .theme__banner { background: url("../images/header-mythos.webp") center/100% 100% no-repeat; }
+
+/* Tag-row left-accent: matches the theme type colour. */
+/* Power tag bars — coloured "selection bar" backgrounds per theme type.
+   The bar image stretches to fill the row, so multi-line tags grow it
+   vertically. The bar already supplies the theme-type colour, so we drop
+   the LitM left-border accent and use uniform horizontal padding instead.
+   Burn-scratch icon (right edge) sits on top of the coloured bar at the
+   row's flex position. */
+.sheet-page--otherscape .tag-row--power {
+  border-left: none;
+  padding: 0.04in 0.08in;
+}
+.sheet-page--otherscape .theme--self   .tag-row--power { background: url("../images/select-bar-self.webp")   center/100% 100% no-repeat; }
+.sheet-page--otherscape .theme--noise  .tag-row--power { background: url("../images/select-bar-noise.webp")  center/100% 100% no-repeat; }
+.sheet-page--otherscape .theme--mythos .tag-row--power { background: url("../images/select-bar-mythos.webp") center/100% 100% no-repeat; }
+
+/* Title tag bar — the theme title is itself a tag, so it gets the same
+   coloured bar as the power tags below it. Padding is added so the text
+   and burn-scratch icon don't touch the bar's end caps; the existing
+   margin keeps the bar inset from the theme card's edges. */
+.sheet-page--otherscape .theme__title {
+  padding: 0.04in 0.08in;
+}
+.sheet-page--otherscape .theme--self   .theme__title { background: url("../images/select-bar-self.webp")   center/100% 100% no-repeat; }
+.sheet-page--otherscape .theme--noise  .theme__title { background: url("../images/select-bar-noise.webp")  center/100% 100% no-repeat; }
+.sheet-page--otherscape .theme--mythos .theme__title { background: url("../images/select-bar-mythos.webp") center/100% 100% no-repeat; }
+
+/* Tag text on the coloured bars uses white for readability against the
+   dark magenta / cyan / purple bars. Applies to power tag rows and the
+   theme title together. Weakness keeps its existing dusky red since the
+   olive bar is light enough to give it adequate contrast. */
+.sheet-page--otherscape .tag-row--power,
+.sheet-page--otherscape .theme__title {
+  color: #fff;
+}
+
+/* Weakness tag — olive bar with diagonal stripes, same in every theme.
+   The dashed top separator from base CSS is dropped since the bar's edge
+   already establishes the visual break. Text goes white for contrast
+   against the olive. The chevron ::before marker is hidden because the
+   striped bar is itself a sufficient "this is a weakness" cue. */
+.sheet-page--otherscape .tag-row--weakness {
+  background: url("../images/select-bar-weakness.webp") center/100% 100% no-repeat;
+  border-top: none;
+  padding: 0.04in 0.08in;
+  color: #fff;
+}
+.sheet-page--otherscape .tag-row--weakness::before {
+  display: none;
+}
+
+/* Portrait placeholder — the tan parchment fill and brown inset shadow
+   from base CSS clash with the metallic grey page. Override with a
+   slightly-darker grey (matches the LitM relationship between page and
+   portrait: portrait is one shade darker) and a neutral dark inset
+   shadow. The "portrait" placeholder text gets a lighter grey so it
+   reads against the new background. */
+.sheet-page--otherscape .portrait-frame {
+  background: #5a5e64;
+  box-shadow: inset 0 0 0.2in rgba(0, 0, 0, 0.25);
+}
+.sheet-page--otherscape .portrait--empty {
+  color: #a8acb2;
+}
+
+/* Pip fill colours per theme type. */
+.sheet-page--otherscape .theme--self   .pip--filled { background: var(--self);   border-color: var(--self); }
+.sheet-page--otherscape .theme--noise  .pip--filled { background: var(--noise);  border-color: var(--noise); }
+.sheet-page--otherscape .theme--mythos .pip--filled { background: var(--mythos); border-color: var(--mythos); }
+
+/* Theme-type icon background images. The SVGs ship a white fill, so they
+   read correctly on the coloured banners. */
+.sheet-page--otherscape .icon--self    { background-image: url("../icons/self.svg"); }
+.sheet-page--otherscape .icon--noise   { background-image: url("../icons/noise.svg"); }
+.sheet-page--otherscape .icon--mythos  { background-image: url("../icons/mythos.svg"); }
+
+/* Icon glow — adds a soft white halo around each icon's silhouette via
+   filter: drop-shadow. Unlike box-shadow, drop-shadow follows the actual
+   shape of the SVG (not its bounding box), so the glow hugs the figure /
+   wave / triangle / flame outlines. Two stacked shadows create a tight
+   inner ring plus a softer outer bloom for a neon-sign feel. */
+.sheet-page--otherscape .icon,
+.sheet-page--otherscape .checkbox,
+.sheet-page--otherscape .backpack-list li::after {
+  filter:
+    drop-shadow(0 0 1px rgba(255, 255, 255, 1))
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.7));
+}
+
+/* Bigger icons for Otherscape. At small sizes (14px banner icons, 11-12px
+   burn icons) the partial-alpha edges dominate the visible area and the
+   icons read as muted compared to crisply hinted text glyphs. Bumping the
+   sizes lets the solid-white interior dominate. Theme + loadout + crew
+   banner icons go to 22px; burn glyphs on tags and loadout items go to
+   14-15px. */
+.sheet-page--otherscape .theme__banner .icon,
+.sheet-page--otherscape .backpack-box   .block-heading .icon,
+.sheet-page--otherscape .fellowship-box .block-heading .icon {
+  width: 22px;
+  height: 22px;
+}
+.sheet-page--otherscape .checkbox {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+.sheet-page--otherscape .backpack-list li::after {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
+/* Loadout and Crew Relationships banners share the dusty blue-grey texture
+   (in LitM both use the tan parchment header-backpack.webp). The icons next
+   to the labels (loadout / crew) come from the GameProfile via inline
+   background-image on the template's <span class="icon"> element. */
+.sheet-page--otherscape .backpack-box   .block-heading,
+.sheet-page--otherscape .fellowship-box .block-heading {
+  background: url("../images/header-crew.webp") center/100% 100% no-repeat;
+}
+
+/* Otherscape uses a distinct burn marker (a stylized flame/arrow) for
+   scratchable tags and loadout items, in place of LitM's burn-scratch
+   glyph. Same dimensions in both places — only the icon URL changes. */
+.sheet-page--otherscape .checkbox,
+.sheet-page--otherscape .backpack-list li::after {
+  background-image: url("../icons/burn-neutral-empty.svg");
+}
+
+/* Loadout items each get a blue-grey "neutral" selection bar background
+   for the cyberpunk aesthetic. The dotted underline from base CSS is
+   dropped since the bar's edges provide visual separation. Horizontal
+   padding insets the number, text, and burn icon from the bar's end
+   caps. Number and item text both go white for contrast. */
+.sheet-page--otherscape .backpack-list li {
+  background: url("../images/select-bar-neutral-toburn.webp") center/100% 100% no-repeat;
+  border-bottom: none;
+  padding-left: 0.08in;
+  padding-right: 0.08in;
+  color: #fff;
+}
+.sheet-page--otherscape .backpack-list li::before {
+  display: none;
+}
+
+/* Header layout — Otherscape pushes the title to the left edge and the
+   accompanying icon to the right edge. DOM order is [icon][text] for both
+   theme banners and the backpack/fellowship headings; flex-direction
+   row-reverse swaps them visually, and space-between separates them across
+   the available width. The padding on each banner provides the side insets
+   so neither hugs the brushwork edge. */
+.sheet-page--otherscape .theme__banner,
+.sheet-page--otherscape .backpack-box   .block-heading,
+.sheet-page--otherscape .fellowship-box .block-heading {
+  flex-direction: row-reverse;
+  justify-content: space-between;
+}

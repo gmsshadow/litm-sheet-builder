@@ -1,0 +1,125 @@
+{
+  "name": "Vex",
+  "descriptor": "Street runner with a glitchy past and an open contract",
+  "quote": "I get things done. Don't ask how.",
+  "portrait_path": null,
+  "backpack": [
+    "Coilgun (suppressed)",
+    "Encrypted deck",
+    "Burner phone ×3",
+    "Smart fabric coat",
+    "Trauma kit",
+    "Forged credentials",
+    "Climbing line",
+    "Comm earpiece",
+    "Cash chip",
+    "Lockpick set"
+  ],
+  "fellowship_companions": [
+    "Vox",
+    "The Surgeon",
+    "Kestrel",
+    "Old Man Lin",
+    ""
+  ],
+  "fellowship_tags": [
+    "fixer who owes me",
+    "patches me up no questions",
+    "data broker",
+    "told me about the Weave",
+    ""
+  ],
+  "promise_pips": 0,
+  "themes": [
+    {
+      "theme_type": "self",
+      "category": "Background",
+      "title": "STREET RUNNER",
+      "quest": "I am the hand that does the work",
+      "power_tags": [
+        "fast on her feet",
+        "reads a room",
+        ""
+      ],
+      "weakness_tags": [
+        "too proud to ask for help"
+      ],
+      "quest_description": "Vex grew up in the towers, learning to read the city by its silences. She runs packages for fixers, debts for memory dealers, and the occasional truth out of a vault. People hire her because she finishes the job.",
+      "special_improvements": [
+        "Once per session, when you act using tags from this theme, you may set the location of a future scene.",
+        ""
+      ],
+      "pips": {
+        "upgrade": 1,
+        "decay": 0
+      }
+    },
+    {
+      "theme_type": "noise",
+      "category": "Cyberware",
+      "title": "WIRED REFLEXES",
+      "quest": "every quiet moment feels wrong",
+      "power_tags": [
+        "subdermal targeting",
+        "enhanced reflexes",
+        ""
+      ],
+      "weakness_tags": [
+        "the buzz never stops"
+      ],
+      "quest_description": "Subdermal lattices hum under Vex's skin. The chrome was a gift from a fixer she crossed once, who wanted her loyal — or at least faster than them. The reflexes work. The buzz never quite stops.",
+      "special_improvements": [
+        "Once per session, treat a missed reaction roll as a partial success at a cost.",
+        ""
+      ],
+      "pips": {
+        "upgrade": 0,
+        "decay": 1
+      }
+    },
+    {
+      "theme_type": "mythos",
+      "category": "Identity",
+      "title": "THE WEAVE",
+      "quest": "trace the seams between worlds",
+      "power_tags": [
+        "sees connections",
+        "speaks the old tongue",
+        ""
+      ],
+      "weakness_tags": [
+        "the weave watches back"
+      ],
+      "quest_description": "Some nights Vex sees the city differently — the wires under the asphalt, the names behind the lights, the old tongue under the corporate logos. She doesn't know what it means. The weave does.",
+      "special_improvements": [
+        "When you would gain a Mythos-related tag, you may also gain a story tag about a future event.",
+        ""
+      ],
+      "pips": {
+        "upgrade": 0,
+        "decay": 0
+      }
+    },
+    {
+      "theme_type": "self",
+      "category": "Past",
+      "title": "OLD DEBTS",
+      "quest": "balance the ledger",
+      "power_tags": [
+        "knows everyone's secrets",
+        "never forgets a face",
+        ""
+      ],
+      "weakness_tags": [
+        "the bill comes due"
+      ],
+      "quest_description": "Vex remembers everyone who helped her, everyone who didn't, and everyone who is still alive because she let them be. She keeps the list short by design. The names on it know her by reputation.",
+      "special_improvements": [
+        "When you call in a debt, you may immediately gain a story tag related to it.",
+        ""
+      ],
+      "pips": {}
+    }
+  ],
+  "game": "otherscape"
+}
