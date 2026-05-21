@@ -20,8 +20,8 @@
 </head>
 <body class="sheet-page sheet-page--{{ game.id }}">
 
-{% macro game_icon(filename, extra_class='') -%}
-<img class="icon{{ ' ' + extra_class if extra_class else '' }}"
+{% macro game_icon(filename, extra_class='', base_class='icon') -%}
+<img class="{{ (base_class ~ ' ' ~ extra_class if extra_class else base_class)|trim }}"
      src="{{ ('static/icons/' + filename) if standalone else url_for('static', filename='icons/' + filename) }}"
      alt="">
 {%- endmacro %}
@@ -30,7 +30,7 @@
 <li class="tag-row tag-row--{{ kind }}{{ ' tag-row--blank' if blank }}{{ ' tag-row--no-checkbox' if not show_checkbox }}">
   <span class="tag-text">{{ text or '' }}</span>
   {% if show_checkbox %}
-  <span class="checkbox"></span>
+  {{ game_icon(game.burn_icon, base_class='checkbox') }}
   {% endif %}
 </li>
 {%- endmacro %}
@@ -124,7 +124,7 @@
 
         <h3 class="theme__title">
           <span class="tag-text">{{ theme.title }}</span>
-          <span class="checkbox"></span>
+          {{ game_icon(game.burn_icon, base_class='checkbox') }}
         </h3>
 
         <ul class="tag-list">

@@ -223,26 +223,14 @@ body.sheet-page--otherscape::after {
 .sheet-page--otherscape .icon--noise   { background-image: url("../icons/noise.png"); }
 .sheet-page--otherscape .icon--mythos  { background-image: url("../icons/mythos.png"); }
 
-/* Icon glow — adds a soft white halo around each icon's silhouette via
-   filter: drop-shadow. Unlike box-shadow, drop-shadow follows the actual
-   shape of the SVG (not its bounding box), so the glow hugs the figure /
-   wave / triangle / flame outlines. Two stacked shadows create a tight
-   inner ring plus a softer outer bloom for a neon-sign feel. */
-.sheet-page--otherscape .icon,
-.sheet-page--otherscape .checkbox,
-.sheet-page--otherscape .backpack-list li::after {
-  filter:
-    drop-shadow(0 0 1px rgba(255, 255, 255, 1))
-    drop-shadow(0 0 4px rgba(255, 255, 255, 0.7));
+/* Bigger icons for Otherscape. Self / Noise / Mythos on theme banners are
+   larger than loadout/crew header icons so the sphere glyphs read clearly
+   next to the 9.5pt banner label. Burn glyphs on tags and loadout items
+   are sized separately below. */
+.sheet-page--otherscape .theme__banner .icon {
+  width: 28px;
+  height: 28px;
 }
-
-/* Bigger icons for Otherscape. At small sizes (14px banner icons, 11-12px
-   burn icons) the partial-alpha edges dominate the visible area and the
-   icons read as muted compared to crisply hinted text glyphs. Bumping the
-   sizes lets the solid-white interior dominate. Theme + loadout + crew
-   banner icons go to 22px; burn glyphs on tags and loadout items go to
-   14-15px. */
-.sheet-page--otherscape .theme__banner .icon,
 .sheet-page--otherscape .backpack-box   .block-heading .icon,
 .sheet-page--otherscape .fellowship-box .block-heading .icon {
   width: 22px;
@@ -267,10 +255,8 @@ body.sheet-page--otherscape::after {
   background: url("../images/header-crew.webp") center/100% 100% no-repeat;
 }
 
-/* Otherscape uses a distinct burn marker (a stylized flame/arrow) for
-   scratchable tags and loadout items, in place of LitM's burn-scratch
-   glyph. Same dimensions in both places — only the icon URL changes. */
-.sheet-page--otherscape .checkbox,
+/* Otherscape burn marker on theme tags / title comes from game.burn_icon via
+   <img class="checkbox"> (see template). Loadout rows still use ::after. */
 .sheet-page--otherscape .backpack-list li::after {
   background-image: url("../icons/burn-neutral-empty.svg");
 }

@@ -53,6 +53,7 @@ class GameProfile:
     fellowship_companion_label: str  # "Companion" / "Crew Member"
     fellowship_tag_label: str        # "Relationship Tag"
     fellowship_icon: str = ""        # icon filename for the fellowship banner ("" = no icon)
+    burn_icon: str = "burn-scratch-empty.svg"  # scratch marker on tags / theme title
     has_promise: bool = True         # whether the Promise pip track is shown
     promise_label: str = "Promise"
     promise_size: int = 5            # number of promise pips
@@ -132,6 +133,7 @@ OTHERSCAPE = GameProfile(
     fellowship_companion_label="Crew Member",
     fellowship_tag_label="Relationship Tag",
     fellowship_icon="crew.svg",
+    burn_icon="burn-neutral-empty.svg",
     has_promise=False,
     background="bg-otherscape-metallic.webp",
     stylesheet="sheet-otherscape.css",
