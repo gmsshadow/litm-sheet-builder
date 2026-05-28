@@ -35,9 +35,24 @@ class Theme:
     title: str = ""                   # the title tag (also scratchable)
     quest: str = ""                   # the italic motto / quest / identity / itch / ritual
     power_tags: list[str] = field(default_factory=lambda: ["", ""])
+    # Parallel boolean list: True means this power tag is currently "active"
+    # on the character, rendering with the standard coloured selection-bar
+    # background. False means inactive — renders with the matching "burn"
+    # variant of the bar (Otherscape only; LitM ignores this since its tag
+    # bars don't have an inactive variant). Defaults give the first two
+    # tags as active and the rest inactive, matching the Otherscape "two
+    # starting power tags" convention. Always kept the same length as
+    # power_tags by from_dict.
+    power_tags_active: list[bool] = field(default_factory=lambda: [True, True])
     weakness_tags: list[str] = field(default_factory=lambda: [""])
     quest_description: str = ""
     special_improvements: list[str] = field(default_factory=lambda: ["", ""])
+    # Parallel boolean list: True means the corresponding special improvement
+    # is "taken" / "selected" by the character and renders with its checkbox
+    # ticked on the sheet. Always kept the same length as special_improvements
+    # (padded with False in from_dict). Older JSONs that pre-date this field
+    # load with all-False, so existing characters render unchanged.
+    special_improvements_filled: list[bool] = field(default_factory=lambda: [False, False])
     # Pips per track: keys are track ids ("abandon", "improve", "milestone", ...)
     # so the same field works across games with different track sets.
     pips: dict[str, int] = field(default_factory=dict)
@@ -47,6 +62,35 @@ class Theme:
     def pip_count(self, track_id: str) -> int:
         """Get the pip count for a track, defaulting to 0 if not present."""
         return int(self.pips.get(track_id, 0) or 0)
+
+    def power_tags_in_render_order(self, sort_active: bool = True) -> list[tuple[str, bool]]:
+        """Return (text, is_active) pairs for sheet display. When
+        `sort_active` is True (Otherscape), active tags float to the top of
+        the power-tags section and inactive ones sink to the bottom, with
+        entry order preserved within each group. When False (LitM), the
+        authored order is kept exactly as-is and only the per-tag active
+        flag travels through — used there to pick a filled vs hollow
+        diamond without shuffling the list."""
+        pairs = list(zip(self.power_tags, self.power_tags_active))
+        # Pad missing active flags with True so a malformed Theme doesn't
+        # silently flip tags inactive — defensive only; from_dict normally
+        # guarantees length parity.
+        while len(pairs) < len(self.power_tags):
+            pairs.append((self.power_tags[len(pairs)], True))
+        if not sort_active:
+            return pairs
+        # Stable sort: True (active) sorts before False (inactive) by
+        # negating, since True > False is the opposite of what we want.
+        return sorted(pairs, key=lambda p: not p[1])
+
+    def power_tags_split(self) -> tuple[list[tuple[str, bool]], list[tuple[str, bool]]]:
+        """Return (active_pairs, inactive_pairs) in authored order, for games
+        that render inactive tags in a separate section below the weakness
+        tag (LitM's "new power tags"). Each entry is (text, is_active)."""
+        pairs = self.power_tags_in_render_order(sort_active=False)
+        active = [(t, a) for t, a in pairs if a]
+        inactive = [(t, a) for t, a in pairs if not a]
+        return active, inactive
 
     # ---- Migration -------------------------------------------------------
 
@@ -111,6 +155,21 @@ class Theme:
             d["power_tags"].append("")
         d["power_tags"] = d["power_tags"][:9]
 
+        # Parallel active list: by default every entry is active. Game-
+        # specific defaults (e.g. Otherscape's "first two only" rule for
+        # JSONs that pre-date this field) are applied by Character.from_dict
+        # *before* it calls Theme.from_dict, since only the Character knows
+        # which game it belongs to. Anything the JSON already supplies wins.
+        provided_active = list(d.get("power_tags_active", []))
+        provided_active = [bool(x) for x in provided_active]
+        active = []
+        for i in range(len(d["power_tags"])):
+            if i < len(provided_active):
+                active.append(provided_active[i])
+            else:
+                active.append(True)
+        d["power_tags_active"] = active
+
         d["weakness_tags"] = list(d.get("weakness_tags", []))
         while len(d["weakness_tags"]) < 1:
             d["weakness_tags"].append("")
@@ -119,6 +178,15 @@ class Theme:
         d["special_improvements"] = list(d.get("special_improvements", []))
         while len(d["special_improvements"]) < 2:
             d["special_improvements"].append("")
+
+        # Keep filled in lock-step with the improvements list. Older JSONs may
+        # be missing the field entirely (default = all False) or may have a
+        # shorter list (pad with False) or longer (truncate to match).
+        filled = list(d.get("special_improvements_filled", []))
+        filled = [bool(x) for x in filled]
+        while len(filled) < len(d["special_improvements"]):
+            filled.append(False)
+        d["special_improvements_filled"] = filled[: len(d["special_improvements"])]
 
         d["pips"] = {k: int(v or 0) for k, v in dict(d.get("pips", {})).items()}
 
@@ -138,23 +206,70 @@ class Character:
     promise_pips: int = 0             # 0–5; only rendered when the game has a promise track
     themes: list[Theme] = field(default_factory=list)
     game: str = "litm"                # game profile id
+    orientation: str = "landscape"    # "landscape" (default) or "portrait" — the latter gives 2×2 theme cards with more vertical room
 
     # ---- (de)serialisation ------------------------------------------------
 
     @classmethod
     def from_dict(cls, d: dict) -> "Character":
-        themes = [Theme.from_dict(t) for t in d.get("themes", [])]
+        # Game-aware migration for power_tags_active: older JSONs (anything
+        # written before this field existed) need a sensible default for
+        # the new flag. Theme.from_dict deliberately defaults to all-active
+        # so it's safe in isolation; here we override that for Otherscape,
+        # whose convention is "the first two power tags start active and
+        # the rest start to-burn". LitM-style games leave every tag active
+        # so their power-tag sort stays a no-op. We mutate the per-theme
+        # dicts *before* Theme.from_dict consumes them so the new defaults
+        # land cleanly through the same coercion path the rest of the
+        # field uses.
+        from .games import get_game
+        game_id = d.get("game", "litm")
+        game = get_game(game_id)
+        game_uses_active = game.uses_power_tag_active_toggle
+
+        theme_dicts = []
+        for t in d.get("themes", []):
+            if "power_tags_active" not in t:
+                t = dict(t)
+                tags = list(t.get("power_tags", []))
+                tag_count = max(len(tags), 2)
+                if game.split_inactive_below_weakness:
+                    # Content-based default (LitM): a power tag that has text
+                    # starts active (renders above the weakness with a filled
+                    # diamond); an empty write-in slot starts inactive (drops
+                    # into the "new power tags" section below the weakness
+                    # with a hollow diamond). This reproduces the official
+                    # sheet's starting layout without the user toggling
+                    # anything.
+                    t["power_tags_active"] = [
+                        bool((tags[i] if i < len(tags) else "").strip())
+                        for i in range(tag_count)
+                    ]
+                elif not game_uses_active:
+                    # Game has no active/inactive concept — every tag active.
+                    t["power_tags_active"] = [True] * tag_count
+                else:
+                    # Count-based default (Otherscape): first N active.
+                    n = game.starting_active_tags
+                    if n is None or n < 0:
+                        t["power_tags_active"] = [True] * tag_count
+                    else:
+                        t["power_tags_active"] = [i < n for i in range(tag_count)]
+            theme_dicts.append(t)
+        themes = [Theme.from_dict(t) for t in theme_dicts]
+
         return cls(
             name=d.get("name", ""),
             descriptor=d.get("descriptor", ""),
             quote=d.get("quote", ""),
             portrait_path=d.get("portrait_path"),
-            backpack=_fixlen(d.get("backpack", []), 10),
+            backpack=list(d.get("backpack", [])),  # preserve authored count; template pads up to game.loadout_slots
             fellowship_companions=_fixlen(d.get("fellowship_companions", []), 5),
             fellowship_tags=_fixlen(d.get("fellowship_tags", []), 5),
             promise_pips=int(d.get("promise_pips", 0) or 0),
             themes=themes,
-            game=d.get("game", "litm"),
+            game=game_id,
+            orientation=d.get("orientation", "landscape") if d.get("orientation") in ("landscape", "portrait") else "landscape",
         )
 
     @classmethod

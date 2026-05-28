@@ -27,16 +27,37 @@
   font-weight: 900;
   font-style: normal;
 }
+/* Recbold — Freepik 2023 (designed by Drizy Studio). Heavy all-caps display
+   face with a subtle horizontal-stripe / scanline detail baked into the
+   letterforms. Used for Otherscape character names. Plain OpenType/CFF
+   outlines (no SVG colour table), so it takes CSS `color` normally —
+   meaning the neon-green hero treatment on .character-name stays intact
+   and continues to pair with the green theme mottos as a single "spoken-
+   aloud" accent layer. The face is already bold-by-design at the default
+   weight 400, so no `font-weight: bold` is needed at the use site. */
+@font-face {
+  font-family: "Recbold";
+  src: url("../fonts/Recbold-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
 
-/* Page background: dark blue-grey base, metallic texture overlaid and
-   significantly darkened with a translucent dark layer. The result is a
-   moody cyberpunk page with subtle texture rather than the previous
-   medium-grey metallic look. */
+/* Page background: the Tokyo cyber-blue atmosphere image. Carries its own
+   subtle OTHERSCAPE branding marks and 35.6762°N/139.6503°E coordinates
+   (Tokyo) in the corners. A light 20%-dark wash sits over it to lift
+   contrast in the brighter cyan-smoke areas without dulling the image.
+
+   Two source images: one for landscape (11×8.5in) and one for portrait
+   (8.5×11in). They share identical art direction (corner branding marks,
+   Tokyo coordinates, 他界/東京 vertical text, blue smoke gradient) but are
+   composed for their respective aspect ratios so the marks land at the
+   page corners instead of being cropped out by `cover`. The portrait
+   override below selects on the orientation--portrait class. */
 body.sheet-page--otherscape {
   background:
-    linear-gradient(rgba(15, 18, 22, 0.7), rgba(15, 18, 22, 0.7)),
-    url("../images/bg-otherscape-metallic.webp") center/cover no-repeat,
-    #14171b;
+    linear-gradient(rgba(8, 12, 20, 0.2), rgba(8, 12, 20, 0.2)),
+    url("../images/bg-otherscape-tokyo.webp") center/cover no-repeat,
+    #061626;
   position: relative;  /* anchor for the ::after OTHERSCAPE wordmark */
   --font-body:    "MyriadPro", "Helvetica Neue", Arial, sans-serif;
   --font-display: "Roboto", "Helvetica Neue", Arial, sans-serif;
@@ -44,7 +65,7 @@ body.sheet-page--otherscape {
   /* Palette flip — surfaces go dark, ink goes light. Every CSS rule that
      reads var(--ink), var(--ink-soft), var(--rule), var(--paper-shade)
      picks up the dark-theme values automatically. */
-  --paper:        #14171b;
+  --paper:        #061626;
   --paper-shade:  #2a2d33;
   --paper-edge:   rgba(245, 240, 230, 0.15);
   --rule:         rgba(245, 240, 230, 0.15);
@@ -52,18 +73,31 @@ body.sheet-page--otherscape {
   --ink-soft:     #c8c4ba;
 }
 
-/* Dark surfaces for theme cards and the loadout/crew boxes — replace the
-   cream-on-grey base CSS backgrounds with a deep blue-grey one shade
-   lighter than the page (raised, not sunken). The border uses the
-   already-light --rule token so it picks up from the palette flip above.
-   Must be fully opaque: WeasyPrint composites a translucent parent
-   background over its children (banners, icons), which washes saturated
-   header WebPs down to muddy browns (~15% of the banner colour over the
-   card fill). LitM's light cream rgba does not show the bug as strongly. */
+/* Portrait orientation: swap to the 8.5×11in companion background so the
+   OTHERSCAPE wordmark, Tokyo coordinate stamp, and corner HUD glyphs land
+   at the portrait page corners. center/cover on the landscape image would
+   crop those marks off-screen at portrait aspect ratio, leaving the page
+   feeling flat. Only the background shorthand needs to flip; every other
+   declaration (palette, fonts, position: relative) is inherited from the
+   rule above and so doesn't need to be restated. */
+body.orientation--portrait.sheet-page--otherscape {
+  background:
+    linear-gradient(rgba(8, 12, 20, 0.2), rgba(8, 12, 20, 0.2)),
+    url("../images/bg-otherscape-tokyo-portrait.webp") center/cover no-repeat,
+    #061626;
+}
+
+/* Box surface tint — sits over the page-bg image at 65% opacity so the
+   Tokyo atmosphere shows through behind text and tags. Earlier this was
+   fully opaque because WeasyPrint composited translucent parent
+   backgrounds over child background-images, muddying the banner WebPs.
+   That bug only affects backgrounds; we now render every banner, bar,
+   and icon as a real <img> element, which sits in foreground and isn't
+   touched by the parent's translucency. */
 .sheet-page--otherscape .theme,
 .sheet-page--otherscape .inventory-box,
 .sheet-page--otherscape .fellowship-box {
-  background: #1e232a;
+  background: rgba(30, 35, 42, 0.4);
 }
 
 /* OTHERSCAPE wordmark — translucent footer label in the bottom-right of
@@ -90,17 +124,32 @@ body.sheet-page--otherscape::after {
    theme cards, where dark text is still correct, so we override these
    three specific selectors rather than the variables. */
 .sheet-page--otherscape .character-name {
-  /* Cyberpunk hero treatment — large size with a strong magenta glow. The
-     glow extends well outside the text box, so we need to make sure the
-     character-info container doesn't clip it (handled below). */
-  color: #f5f0e6;
+  /* Cyberpunk hero treatment — Recbold is a heavy all-caps display face
+     with a subtle horizontal-stripe scanline texture baked into the
+     letterforms, which pairs naturally with the green text-shadow bloom
+     to read as "neon sign meets CRT". The colour is the vibrant neon
+     green echoed on .theme__motto below so the character's name and
+     their per-theme voice lines feel like a single spoken-aloud accent
+     layer across the sheet. The glow uses the same hue with falling
+     opacity to fake an additive bloom; we need to make sure the
+     character-info container doesn't clip it (handled below).
+     Recbold is bold-by-design at weight 400, no font-weight override
+     needed. */
+  font-family: "Recbold", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  color: #39FF14;
   font-size: 38pt;
   line-height: 1;
   letter-spacing: -0.01em;
   text-shadow:
-    0 0 10px rgba(208, 28, 88, 0.7),
-    0 0 22px rgba(208, 28, 88, 0.4),
-    0 0 36px rgba(208, 28, 88, 0.2);
+    0 0 10px rgba(57, 255, 20, 0.7),
+    0 0 22px rgba(57, 255, 20, 0.4),
+    0 0 36px rgba(57, 255, 20, 0.2);
+}
+/* Portrait orientation: narrower character-info column, so scale the
+   display name down accordingly to keep it inside its lane. Both classes
+   sit on the body element so the selector uses no space between them. */
+body.orientation--portrait.sheet-page--otherscape .character-name {
+  font-size: 24pt;
 }
 .sheet-page--otherscape .character-info {
   overflow: visible;  /* don't clip the character-name glow at the column edge */
@@ -118,11 +167,79 @@ body.sheet-page--otherscape::after {
   font-weight: 400;
 }
 
+/* Theme-type tally — narrow column between portrait and character info.
+   One row per game-profile theme type (Self / Noise / Mythos), each with a
+   coloured icon on top and a rotated label reading bottom-to-top below.
+   Profile-driven via game.show_theme_tally — won't render at all when
+   disabled, but the styles are scoped under .sheet-page--otherscape so
+   they couldn't leak into LitM anyway. */
+
+/* Shrink the character-block flex gap for Otherscape so the tally hugs
+   the portrait and the descriptor/quote start right next to the tally,
+   instead of sitting in the dead space the default 0.18in gap leaves. */
+.sheet-page--otherscape .character-block {
+  gap: 0.06in;
+}
+.sheet-page--otherscape .theme-tally {
+  flex: 0 0 0.22in;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  height: 100%;
+  padding: 0.06in 0;
+}
+.sheet-page--otherscape .theme-tally__row {
+  /* Each row gets an equal slice of the column height; the rotated
+     icon+label inside is absolutely positioned at the row's centre so
+     the rotation has no layout footprint. That keeps the column narrow
+     regardless of how long the label is. */
+  position: relative;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+}
+.sheet-page--otherscape .theme-tally__rotated {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* translate(-50%, -50%) recentres on the actual midpoint of the box
+     (since position: absolute + top/left only places the top-left
+     corner); rotate(-90deg) then orients icon→label vertically. */
+  transform: translate(-50%, -50%) rotate(-90deg);
+  transform-origin: center center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.05in;
+  white-space: nowrap;
+}
+.sheet-page--otherscape .theme-tally__icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+.sheet-page--otherscape .theme-tally__label {
+  font-family: var(--font-display);
+  font-size: 8pt;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  line-height: 1;
+}
+.sheet-page--otherscape .theme-tally__row--self   .theme-tally__label { color: var(--self); }
+.sheet-page--otherscape .theme-tally__row--noise  .theme-tally__label { color: var(--noise); }
+.sheet-page--otherscape .theme-tally__row--mythos .theme-tally__label { color: var(--mythos); }
+
 /* Square pips (LitM uses circles). One-property flip; works for both the
-   theme-card pip rows and the (LitM-only) Promise track. */
+   theme-card pip rows and the (LitM-only) Promise track.
+   Empty pips fill white so a printed sheet is easy to mark up by hand;
+   selected pips stay the theme colour via the more-specific .pip--filled
+   rules further down. */
 .sheet-page--otherscape .pip,
 .sheet-page--otherscape .promise__pip {
   border-radius: 0;
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.35);
 }
 
 /* Theme palette — three Otherscape spheres. */
@@ -176,8 +293,9 @@ body.sheet-page--otherscape::after {
    shadow. The "portrait" placeholder text gets a lighter grey so it
    reads against the new background. */
 .sheet-page--otherscape .portrait-frame {
-  background: #5a5e64;
-  box-shadow: inset 0 0 0.2in rgba(0, 0, 0, 0.25);
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 .sheet-page--otherscape .portrait--empty {
   color: #a8acb2;
@@ -187,6 +305,82 @@ body.sheet-page--otherscape::after {
 .sheet-page--otherscape .theme--self   .pip--filled { background: var(--self);   border-color: var(--self); }
 .sheet-page--otherscape .theme--noise  .pip--filled { background: var(--noise);  border-color: var(--noise); }
 .sheet-page--otherscape .theme--mythos .pip--filled { background: var(--mythos); border-color: var(--mythos); }
+
+/* Theme motto (rendered from theme.quest) — the one-line statement that
+   reads as the character's first-person quote about that theme, e.g.
+   "I must wear my Oni mask at all times." In Otherscape these are punchy
+   voice lines, so we set them in Recbold (the same heavy-stroke cyberpunk
+   display face used for the character name) at all-caps. Together with
+   the motto-label below — also Recbold all-caps in the same theme accent
+   colour — the pair reads as a single shouted-voice block tinted to the
+   theme type (Self pink, Noise cyan, Mythos purple).
+
+   Recbold is bold-by-design at weight 400, so we explicitly reset
+   font-weight: normal here (the base .theme__motto rule sets italic,
+   which would synthesise an oblique cut from Recbold and look ugly —
+   font-style: normal cancels that). text-transform: uppercase is
+   belt-and-braces: Recbold's lowercase glyphs are caps-shaped already,
+   but the explicit transform keeps things consistent in case the font
+   ever gains a real lowercase set or falls back to a different face. */
+.sheet-page--otherscape .theme__motto {
+  font-family: "Recbold", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  font-size: 10.5pt;
+  font-weight: normal;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+body.orientation--portrait.sheet-page--otherscape .theme__motto {
+  font-size: 9pt;
+}
+
+/* Small caps section title rendered above each theme's motto (template only
+   emits it when game.show_quest_label is set, i.e. for Otherscape). The text
+   comes from ThemeType.quest_label — "Identity" / "Itch" / "Ritual" — and is
+   uppercased in CSS so the data file stays human-readable. Sits in the same
+   accent colour as the motto below it so the title+quote pair reads as a
+   single block tinted to the theme type. Matches the motto's Recbold all-
+   caps treatment for visual coherence; size is held down so the small
+   label is clearly subsidiary to the larger motto line below it. */
+.sheet-page--otherscape .theme__motto-label {
+  font-family: "Recbold", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  font-size: 7.5pt;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0.05in 0.1in 0;
+  line-height: 1;
+}
+body.orientation--portrait.sheet-page--otherscape .theme__motto-label {
+  font-size: 6.5pt;
+  margin: 0.04in 0.08in 0;
+}
+
+/* Per-theme-type colouring for the motto + its title. The CSS variables
+   --self / --noise / --mythos are the same hues used by the pip fills above
+   and the theme banner artwork, so the motto pair becomes the theme's own
+   accent voice on the card rather than a sheet-wide green. */
+.sheet-page--otherscape .theme--self   .theme__motto,
+.sheet-page--otherscape .theme--self   .theme__motto-label { color: var(--self);   }
+.sheet-page--otherscape .theme--noise  .theme__motto,
+.sheet-page--otherscape .theme--noise  .theme__motto-label { color: var(--noise);  }
+.sheet-page--otherscape .theme--mythos .theme__motto,
+.sheet-page--otherscape .theme--mythos .theme__motto-label { color: var(--mythos); }
+
+/* Optional-improvement checkbox: mirror the Otherscape pip treatment.
+   The base .theme__special-check rule in sheet.css already gives us a
+   solid-white interior; here we (a) swap the soft LitM-ish border for
+   the same darker outline the pips use against this page's dark
+   background, and (b) when checked, switch the fill from the LitM ink
+   colour to the per-theme accent (Self pink, Noise cyan, Mythos purple),
+   matching the per-theme .pip--filled rules above. */
+.sheet-page--otherscape .theme__special-check {
+  border-color: rgba(0, 0, 0, 0.35);
+}
+.sheet-page--otherscape .theme--self   .theme__special-check--filled { background: var(--self);   border-color: var(--self);   }
+.sheet-page--otherscape .theme--noise  .theme__special-check--filled { background: var(--noise);  border-color: var(--noise);  }
+.sheet-page--otherscape .theme--mythos .theme__special-check--filled { background: var(--mythos); border-color: var(--mythos); }
 
 /* Theme-type icon background images. These mirror the src attribute on the
    <img class="icon icon--..."> element in the template — kept as a fallback
@@ -223,7 +417,12 @@ body.sheet-page--otherscape::after {
   height: 16px;
   flex: 0 0 16px;
 }
-/* Loadout rows — bar + burn flame via <img> (game.loadout_bar, game.burn_icon). */
+/* Loadout rows — bar + burn flame via <img> (game.loadout_bar, game.burn_icon).
+   Otherscape rows pin to a single line each so the row count × row height
+   stays predictable: any item name that would otherwise wrap to two lines
+   (e.g. "Shamanic Healing Potion") gets ellipsis-truncated instead. Without
+   this, varying row heights from wrapped items could push the last slot
+   past the inventory-box border and into overflow:hidden territory. */
 .sheet-page--otherscape .backpack-list__item--bar {
   color: #fff;
 }
@@ -233,10 +432,30 @@ body.sheet-page--otherscape::after {
 .sheet-page--otherscape .backpack-list__item--bar .backpack-list__num {
   color: inherit;
 }
+.sheet-page--otherscape .backpack-list__item--bar .slot-text {
+  font-size: 9.5pt;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .sheet-page--otherscape .backpack-list__content .checkbox {
   width: 14px;
   height: 14px;
   flex: 0 0 14px;
+}
+
+/* Portrait stacked mode: tighten bar row padding and slot-text size so all
+   8 loadout entries clear the inventory box's ~1.55in vertical budget. At
+   landscape metrics (0.09in vertical padding + 9.5pt single-line text =
+   ≈0.222in per row), 8 rows would need ≈1.78in and overflow the box. The
+   trimmed metrics here come to ≈0.17in per row → ≈1.37in for 8 rows, with
+   margin to spare. Bar imagery scales with the row so the visual rhythm
+   stays the same, just shorter. */
+body.orientation--portrait.sheet-page--otherscape .top-row__side .backpack-list__item--bar .backpack-list__content {
+  padding: 0.035in 0.08in 0.02in 0.13in;
+}
+body.orientation--portrait.sheet-page--otherscape .top-row__side .backpack-list__item--bar .slot-text {
+  font-size: 8.5pt;
 }
 
 /* Theme banners: DOM [icon][label], row-reverse → label left, icon right. */

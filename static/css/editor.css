@@ -148,6 +148,18 @@ input:focus, textarea:focus, select:focus {
   flex: 0 0 auto;
   margin: 0;
 }
+/* Wrapper label around any row-leading checkbox (special-improvement
+   "taken" toggle, power-tag "active" toggle, future cases). The label
+   makes the entire box area clickable (not just the small native
+   checkbox glyph), and `inline-flex` keeps it behaving like a single
+   flex child inside .tag-edit-row instead of expanding to take the
+   row's full inline width. */
+.row-leading-check {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
 .tag-edit-row input[type="text"],
 .tag-edit-row textarea {
   flex: 1 1 auto;

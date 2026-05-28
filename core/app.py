@@ -158,30 +158,67 @@ def _character_from_form(form) -> Character:
             tr.id: int(form.get(f"{p}pip_{tr.id}", 0) or 0)
             for tr in game.tracks
         }
+        # Collect the special-improvement text rows first, then read the
+        # parallel filled-state checkboxes for each row. Unchecked checkboxes
+        # don't submit at all (HTML form behaviour), so we can't iterate them
+        # the way _collect_indexed iterates text fields — we walk the same
+        # index range that special_improvements occupies and ask whether the
+        # matching checkbox key is present.
+        special_improvements = _collect_indexed(form, f"{p}special_", limit=10)
+        special_improvements_filled = [
+            bool(form.get(f"{p}special_filled_{k}"))
+            for k in range(len(special_improvements))
+        ]
+        # Same pattern for power-tag active state: walk the same index range
+        # as power_tags and ask whether each `power_active_K` checkbox is in
+        # the form. Unchecked = inactive (the user can toggle a previously-
+        # active tag off and have it persist as False). For games that don't
+        # surface this toggle (LitM), default to all-active so the LitM
+        # editor's missing checkboxes don't accidentally flip every tag
+        # inactive on save — the field still round-trips through the JSON,
+        # it just never has reason to be False.
+        power_tags = _collect_indexed(form, f"{p}power_", limit=9)
+        if game.uses_power_tag_active_toggle:
+            power_tags_active = [
+                bool(form.get(f"{p}power_active_{k}"))
+                for k in range(len(power_tags))
+            ]
+        else:
+            power_tags_active = [True] * len(power_tags)
         themes.append(
             Theme(
                 theme_type=form.get(f"{p}theme_type", game.default_theme_type_id),
                 category=form.get(f"{p}category", ""),
                 title=form.get(f"{p}title", ""),
                 quest=form.get(f"{p}quest", ""),
-                power_tags=_collect_indexed(form, f"{p}power_", limit=9),
+                power_tags=power_tags,
+                power_tags_active=power_tags_active,
                 weakness_tags=_collect_indexed(form, f"{p}weakness_", limit=2),
                 quest_description=form.get(f"{p}quest_description", ""),
-                special_improvements=_collect_indexed(form, f"{p}special_", limit=10),
+                special_improvements=special_improvements,
+                special_improvements_filled=special_improvements_filled,
                 pips=pips,
             )
         )
+    # `orientation` round-trips through the form so a portrait sheet stays
+    # portrait when re-saved. Anything outside the allowed pair degrades to
+    # "landscape" — same fallback the JSON loader applies on disk.
+    orientation = form.get("orientation", "landscape")
+    if orientation not in ("landscape", "portrait"):
+        orientation = "landscape"
+
     return Character(
         name=form.get("name", ""),
         descriptor=form.get("descriptor", ""),
         quote=form.get("quote", ""),
         portrait_path=form.get("portrait_path") or None,
-        backpack=[form.get(f"backpack_{k}", "") for k in range(10)],
+        backpack=[form.get(f"backpack_{k}", "") for k in range(game.loadout_slots)],
         fellowship_companions=[form.get(f"fellowship_companion_{k}", "") for k in range(5)],
         fellowship_tags=[form.get(f"fellowship_tag_{k}", "") for k in range(5)],
         promise_pips=int(form.get("promise_pips", 0) or 0),
         themes=themes,
         game=game.id,
+        orientation=orientation,
     )
 
 

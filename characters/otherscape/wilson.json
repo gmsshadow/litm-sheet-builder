@@ -1,0 +1,137 @@
+{
+  "name": "Wilson",
+  "descriptor": "American mercenary in Tokyo, his face fused to an oni's mask",
+  "quote": "\"Aaaaarrgghh!! You want a piece of me?!\" *Sprays automatic fire*",
+  "portrait_path": "images/wilson.png",
+  "backpack": [
+    "Tactical Assault Rifle",
+    "High-Caliber Handgun",
+    "Grenade Launcher",
+    "Ballistic Shield",
+    "Telescopic Sight",
+    "Armored Motorbike",
+    "Shamanic Healing Potion",
+    "Explosive Rounds",
+    "",
+    ""
+  ],
+  "fellowship_companions": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "fellowship_tags": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "promise_pips": 0,
+  "themes": [
+    {
+      "theme_type": "mythos",
+      "category": "Artifact",
+      "title": "ONI MASK",
+      "quest": "\"I must wear my Oni mask at all times.\"",
+      "power_tags": [
+        "Oni strength",
+        "Demonic durability",
+        "Rapid regeneration",
+        "Acute sense of smell",
+        "Muscular overgrowth"
+      ],
+      "weakness_tags": [
+        "Easily angered"
+      ],
+      "quest_description": "When Wilson ended up in Japan, he signed up with a local crime syndicate and was given an oni mask that grants him an ogre's strength and durability, to carry his many guns. However, he must wear it at all times, even when sleeping. He doesn't remember when he last took it off, but his dreams are becoming nightmarish, and he feels a lust for violence and chaos that isn't his own.",
+      "special_improvements": [
+        "Reckless Discharge: On a miss [6-] with tags from this theme, you may treat it as a mixed hit [7-9] and mark Decay on this theme, or as a strong hit [10+] and mark two Decay on this theme.",
+        ""
+      ],
+      "pips": {
+        "upgrade": 0,
+        "decay": 0
+      }
+    },
+    {
+      "theme_type": "self",
+      "category": "Troubled Past",
+      "title": "MILITARY PAST",
+      "quest": "\"Complete the mission.\"",
+      "power_tags": [
+        "Team tactics",
+        "Firearm modifications",
+        "Calm under fire",
+        "Provide cover fire",
+        "Crack shot"
+      ],
+      "weakness_tags": [
+        "Battlefield flashbacks"
+      ],
+      "quest_description": "Before he came to Tokyo, Wilson served in an undisclosed international or corporate military force. His service hardened him and instilled in him the determination and skills of a soldier. However, it also left its scars on him, manifesting in an unwillingness to revisit his memories of old battles.",
+      "special_improvements": [
+        "Touchy Subject: When someone else mentions your past in a way that irks or offends you, you can chose to go into an emotional state and take a appropriate tier-2 status of your choice for the rest of the scene or until you calm down, whichever comes sooner.",
+        ""
+      ],
+      "pips": {
+        "upgrade": 0,
+        "decay": 0
+      }
+    },
+    {
+      "theme_type": "self",
+      "category": "Personality",
+      "title": "RONIN, GAIJIN",
+      "quest": "\"I'm in the merc life for the gunplay.\"",
+      "power_tags": [
+        "Pulse of the underworld",
+        "Expat network",
+        "Buddy system",
+        "Pistol-whip",
+        "Scan the crowd"
+      ],
+      "weakness_tags": [
+        "Adrenaline junkie"
+      ],
+      "quest_description": "An expatriate (gaijin, or 'foreigner') from the US, Wilson got into the mercenary business because of his love for firearms. He is known and respected in the underworld as a gunman and custom firearms modder, and he often works with fellow expats, who loop him in on jobs and rumors. He faces danger head-on, and loves being in the midst of a heated battle.",
+      "special_improvements": [
+        "Not Giving a F**K: Once per scene, when you mitigate social Consequences and roll a strong hit, you may spend all your Power to completely avoid all Consequence Effects.",
+        ""
+      ],
+      "pips": {
+        "upgrade": 0,
+        "decay": 0
+      }
+    },
+    {
+      "theme_type": "noise",
+      "category": "Cutting Edge",
+      "title": "HEAVY RAILGUN",
+      "quest": "\"Break it with brute force.\"",
+      "power_tags": [
+        "Projectiles too fast to dodge",
+        "Short-range plasma pulse",
+        "Ricochet calculator",
+        "Cable-gun extension",
+        "Light strike vehicle"
+      ],
+      "weakness_tags": [
+        "Weapon jam"
+      ],
+      "quest_description": "The crowning point of Wilson's extensive gun collection and his favorite weapon is a bulky, experimental rail gun that was designed to be vehicle mounted; only someone with his brute oni strength can reasonably wield it as a personal firearm. With such heavy weaponry, he is tempted to confront every situation with maximum force.",
+      "special_improvements": [
+        "Void the Warranty: When you Go Out In A Blaze when using your Cutting Edge tech, if you risk this theme in a Significant or No Return sacrifice, you may treat a miss [6-] as a mixed hit [7-9].",
+        ""
+      ],
+      "pips": {
+        "upgrade": 0,
+        "decay": 0
+      }
+    }
+  ],
+  "game": "otherscape",
+  "orientation": "portrait"
+}

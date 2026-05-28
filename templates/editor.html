@@ -44,13 +44,27 @@
     <label>Portrait path (relative to <code>static/</code>)
       <input type="text" name="portrait_path" value="{{ character.portrait_path or '' }}" placeholder="images/my-portrait.png">
     </label>
+    {# Page orientation drives both the @page size (inline in sheet.html) and
+       the body's orientation--* class. Landscape = 11×8.5in, 1×4 theme row;
+       portrait = 8.5×11in with narrower / taller theme cards. Otherscape
+       additionally swaps to a portrait-composed background image. #}
+    <label>Page orientation
+      <select name="orientation" id="orientation-select">
+        <option value="landscape" {% if character.orientation == 'landscape' %}selected{% endif %}>Landscape — 11 × 8.5 in</option>
+        <option value="portrait"  {% if character.orientation == 'portrait'  %}selected{% endif %}>Portrait — 8.5 × 11 in</option>
+      </select>
+    </label>
   </fieldset>
 
   <fieldset class="block">
-    <legend>{{ game.backpack_label }} (10 slots)</legend>
+    <legend>{{ game.backpack_label }} ({{ game.loadout_slots }} slots)</legend>
     <div class="backpack-grid-edit">
-      {% for slot in character.backpack %}
-        <label>#{{ loop.index }} <input type="text" name="backpack_{{ loop.index0 }}" value="{{ slot }}"></label>
+      {# Always render `game.loadout_slots` rows, padding short backpacks
+         with empty inputs and ignoring any extra entries beyond the slot
+         count. Matches the sheet-render behaviour, so what you see in the
+         editor is exactly what gets printed. #}
+      {% for k in range(game.loadout_slots) %}
+        <label>#{{ k + 1 }} <input type="text" name="backpack_{{ k }}" value="{{ character.backpack[k] if k < character.backpack|length else '' }}"></label>
       {% endfor %}
     </div>
   </fieldset>
@@ -98,13 +112,27 @@
           Power tags
           <span class="row-controls">
             <button type="button" class="row-btn row-btn--remove" data-target="theme{{ ti }}-power" data-min="2">−</button>
-            <button type="button" class="row-btn row-btn--add"    data-target="theme{{ ti }}-power" data-max="9" data-name="theme{{ ti }}_power" data-placeholder="power tag">+</button>
+            <button type="button" class="row-btn row-btn--add"    data-target="theme{{ ti }}-power" data-max="9" data-name="theme{{ ti }}_power" data-placeholder="power tag"{% if game.uses_power_tag_active_toggle %} data-with-check="theme{{ ti }}_power_active"{% endif %}>+</button>
           </span>
-          <span class="hint">2 minimum, 9 maximum — blank rows render as handwriting space</span>
+          <span class="hint">
+            2 minimum, 9 maximum — blank rows render as handwriting space
+            {%- if game.uses_power_tag_active_toggle %} · tick to mark as active{% endif %}
+          </span>
         </div>
         <div id="theme{{ ti }}-power" class="rows-container">
           {% for k in range(theme.power_tags|length) %}
-            <div class="tag-edit-row">
+            {# Games with the active/inactive tag system (Otherscape, LitM)
+               expose a per-tag active checkbox; others stay text-only.
+               Ticking marks the tag active: on Otherscape that swaps it to
+               the coloured selection-bar (and floats it above the to-burn
+               tags); on LitM it swaps the hollow diamond marker for the
+               filled one (no reordering). #}
+            <div class="tag-edit-row{% if game.uses_power_tag_active_toggle %} tag-edit-row--with-check{% endif %}">
+              {% if game.uses_power_tag_active_toggle %}
+                <label class="row-leading-check" title="Mark this tag active">
+                  <input type="checkbox" name="theme{{ ti }}_power_active_{{ k }}" value="1"{% if theme.power_tags_active[k] %} checked{% endif %}>
+                </label>
+              {% endif %}
               <input type="text" name="theme{{ ti }}_power_{{ k }}" value="{{ theme.power_tags[k] }}" placeholder="power tag {{ k+1 }}">
             </div>
           {% endfor %}
@@ -142,13 +170,20 @@
           Special improvements
           <span class="row-controls">
             <button type="button" class="row-btn row-btn--remove" data-target="theme{{ ti }}-special" data-min="2">−</button>
-            <button type="button" class="row-btn row-btn--add"    data-target="theme{{ ti }}-special" data-max="6" data-name="theme{{ ti }}_special" data-placeholder="special improvement" data-element="textarea">+</button>
+            <button type="button" class="row-btn row-btn--add"    data-target="theme{{ ti }}-special" data-max="6" data-name="theme{{ ti }}_special" data-placeholder="special improvement" data-element="textarea" data-with-check="theme{{ ti }}_special_filled">+</button>
           </span>
-          <span class="hint">2 minimum</span>
+          <span class="hint">2 minimum · tick to mark as taken</span>
         </div>
         <div id="theme{{ ti }}-special" class="rows-container">
           {% for k in range(theme.special_improvements|length) %}
-            <div class="tag-edit-row">
+            <div class="tag-edit-row tag-edit-row--with-check">
+              {# The checkbox is paired with the textarea below it; ticking
+                 marks Theme.special_improvements_filled[k] = True in the
+                 saved JSON, and the sheet renders that row with a filled
+                 .theme__special-check square instead of an empty outline. #}
+              <label class="row-leading-check" title="Mark as taken">
+                <input type="checkbox" name="theme{{ ti }}_special_filled_{{ k }}" value="1"{% if theme.special_improvements_filled[k] %} checked{% endif %}>
+              </label>
               <textarea name="theme{{ ti }}_special_{{ k }}" rows="2" placeholder="special improvement">{{ theme.special_improvements[k] }}</textarea>
             </div>
           {% endfor %}
@@ -216,12 +251,24 @@
       const baseName = btn.dataset.name;
       const placeholder = btn.dataset.placeholder || "";
       const isTextarea = btn.dataset.element === "textarea";
+      // Optional: if data-with-check="<form-field-base>" is set, the added
+      // row also gets a leading checkbox using that base name (matches the
+      // structure of statically-rendered rows that carry a checkbox). New
+      // rows always start unchecked because both current use cases want
+      // that behaviour: a freshly-added special-improvement starts un-taken
+      // (the user opts in), and a freshly-added power tag starts inactive
+      // (the user's two "starting active" tags are the ones rendered by
+      // Jinja in the initial page load).
+      const checkBase = btn.dataset.withCheck || "";
       const row = document.createElement("div");
-      row.className = "tag-edit-row";
+      row.className = "tag-edit-row" + (checkBase ? " tag-edit-row--with-check" : "");
+      const checkHTML = checkBase
+        ? `<label class="row-leading-check" title="Toggle"><input type="checkbox" name="${checkBase}_${idx}" value="1"></label>`
+        : "";
       if (isTextarea) {
-        row.innerHTML = `<textarea name="${baseName}_${idx}" rows="2" placeholder="${placeholder}"></textarea>`;
+        row.innerHTML = `${checkHTML}<textarea name="${baseName}_${idx}" rows="2" placeholder="${placeholder}"></textarea>`;
       } else {
-        row.innerHTML = `<input type="text" name="${baseName}_${idx}" placeholder="${placeholder} ${idx + 1}">`;
+        row.innerHTML = `${checkHTML}<input type="text" name="${baseName}_${idx}" placeholder="${placeholder} ${idx + 1}">`;
       }
       container.appendChild(row);
       refreshPreview();
@@ -280,11 +327,20 @@
   });
 
   // Refresh preview on first load and on every change with light debounce.
+  // Listens to both `input` and `change` because checkbox state toggles fire
+  // both events in modern browsers but the `change` event has been the
+  // canonical checkbox-toggle signal for far longer — listening to both
+  // keeps the preview update robust against any browser that doesn't fire
+  // `input` on a checkbox flip. Same debounce timer guards against the
+  // double-fire (a single toggle that fires both events still only
+  // triggers one refresh).
   let debounce;
-  form.addEventListener("input", () => {
+  function scheduleRefresh() {
     clearTimeout(debounce);
     debounce = setTimeout(refreshPreview, 350);
-  });
+  }
+  form.addEventListener("input",  scheduleRefresh);
+  form.addEventListener("change", scheduleRefresh);
   refreshPreview();
 </script>
 

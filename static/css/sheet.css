@@ -119,6 +119,22 @@ body.sheet-page {
 .character-block .portrait-frame { flex: 0 0 1.85in; height: 100%; }
 .character-block .character-info { flex: 1 1 0; min-width: 0; }
 
+/* .top-row__side wraps the inventory and fellowship boxes so they can stack
+   vertically in portrait orientation without changing landscape layout. In
+   landscape it's a flex row with combined flex = 0.8 (inventory) + 1.4
+   (fellowship) = 2.2, so the inner ratios still divide the wrapper's space
+   the same way the old direct-child layout did — landscape rendering is
+   pixel-identical to before this wrapper existed. The portrait override
+   below flips flex-direction to column. */
+.top-row__side {
+  display: flex;
+  flex-direction: row;
+  gap: 0.18in;
+  flex: 2.2 1 0;
+  height: 100%;
+  min-width: 0;
+}
+
 .inventory-block  { flex: 0.8 1 0; display: flex; flex-direction: column; height: 100%; }
 .fellowship-block { flex: 1.4 1 0; display: flex; flex-direction: column; height: 100%; }
 
@@ -129,6 +145,114 @@ body.sheet-page {
   flex: 1.45 1 0;
 }
 .themes-row > .theme { flex: 1 1 0; min-width: 0; }
+
+/* ---- Portrait orientation -----------------------------------------------
+   Opt-in via Character.orientation = "portrait" (default is "landscape").
+   The page itself is rotated via an inline @page rule in the template head.
+
+   Layout: 1×4 theme cards on a single row, but the cards become narrower
+   and significantly taller — the portrait page's extra height transfers
+   to the theme cards. The top-row also restructures: instead of three
+   side-by-side columns (character | inventory | fellowship), the inventory
+   and fellowship boxes stack vertically on the right via the .top-row__side
+   wrapper, freeing horizontal space so the character-block grows wider
+   (more room for a larger portrait and longer descriptor / quote).
+
+   Layout budget (8.5×11in, 0.35in padding all sides):
+     - usable area: 7.8in × 10.3in
+     - top-row: 2.75in   (was 3.1in; trimmed so theme cards get more height
+                          and the right-side boxes stop carrying empty
+                          whitespace for characters with under-full crew rosters)
+     - gap to themes-row: 0.18in
+     - themes-row: 7.37in (≈11% shorter than landscape's 8.32in)
+     - character-block: flex 2.4 → ≈4.6in wide (was ≈3.6in)
+     - side-stack:      flex 1.6 → ≈3.0in wide
+       · inventory: flex 1.5 vert → ≈1.55in tall (fits 8 Otherscape rows
+                                                  once the per-row padding
+                                                  tightens — see below)
+       · fellowship: flex 1.0 vert → ≈1.05in tall (5 rows + header at the
+                                                   tightened portrait sizes) */
+body.orientation--portrait .sheet {
+  width: 8.5in;
+  height: 11in;
+  max-height: 11in;
+  overflow: hidden;     /* contain the layout strictly to one page */
+}
+body.orientation--portrait .top-row {
+  flex: 0 0 2.75in;
+}
+body.orientation--portrait .themes-row {
+  flex: 1 1 0;          /* fill remaining height */
+}
+
+/* Character-block: more horizontal room for the portrait + character-info
+   column. The 1.85in fixed-width portrait-frame stays the same width; with
+   top-row trimmed to 2.75in the portrait also shortens vertically (it's
+   height: 100% of character-block), keeping it visually proportionate to
+   the side-stack next to it. */
+body.orientation--portrait .character-block {
+  flex: 2.4 1 0;
+}
+
+/* Side-stack flips to a vertical column, with inventory taking 60% of the
+   height (taller because it has more rows of content) and fellowship 40%.
+   Children's `height: 100%` from the base rule would conflict with the
+   column flex sizing, so reset it to auto and let flex own the height. */
+body.orientation--portrait .top-row__side {
+  flex: 1.6 1 0;
+  flex-direction: column;
+  gap: 0.12in;
+}
+body.orientation--portrait .top-row__side .inventory-block,
+body.orientation--portrait .top-row__side .fellowship-block {
+  height: auto;
+  flex-basis: 0;
+}
+body.orientation--portrait .top-row__side .inventory-block  { flex-grow: 1.5; }
+body.orientation--portrait .top-row__side .fellowship-block { flex-grow: 1.0; }
+
+/* Row tightening for the stacked side panel. The narrower vertical budget
+   in portrait stacked mode would push the 8th loadout row (Otherscape) or
+   the trailing rows (LitM) past the bottom of the box at landscape row
+   metrics. Generic fellowship-row trims live here; Otherscape's loadout
+   bars have their own padding/font in sheet-otherscape.css and so are
+   tightened over there. */
+body.orientation--portrait .top-row__side .fellowship-row .fellowship-cell {
+  font-size: 9.5pt;
+  min-height: 1.05em;
+  padding: 0.012in 0.04in;
+}
+body.orientation--portrait .top-row__side .fellowship-row--header .fellowship-cell {
+  font-size: 7pt;
+}
+
+/* In portrait, theme cards are ~25% narrower than landscape. To keep
+   content readable at that width, every font and image inside a card
+   scales down ~20%. The page's extra vertical height (~60% more) then
+   translates into real breathing room: same content, much taller card. */
+body.orientation--portrait .theme__title       { font-size: 9pt;  }
+body.orientation--portrait .tag-row            { font-size: 9pt;  min-height: 1.2em; padding: 0.018in 0; }
+body.orientation--portrait .theme__section-label,
+body.orientation--portrait .theme__special-label { font-size: 6pt; }
+body.orientation--portrait .track__label       { font-size: 6.5pt; letter-spacing: 0.04em; }
+body.orientation--portrait .pip                { width: 8px; height: 8px; }
+body.orientation--portrait .theme__motto       { font-size: 7.5pt; margin-top: 0.04in; }
+body.orientation--portrait .theme__description,
+body.orientation--portrait .theme__special     { font-size: 7pt; margin-top: 0.03in; line-height: 1.15; }
+body.orientation--portrait .theme__tracks      { margin-top: 0.05in; gap: 0.06in;
+                                                  /* Spread the three track labels (Abandon / Improve /
+                                                     Milestone for LitM) to the ends and centre of the
+                                                     card. justify-content: space-around (inherited from
+                                                     the base rule) pushes them too close together in
+                                                     portrait-narrow columns and they read as one
+                                                     run-together word "ABANDONIMPROVEMILESTONE".
+                                                     space-between gives them the full card width to
+                                                     breathe across, and is harmless for Otherscape
+                                                     (only two labels — Upgrade / Decay — which already
+                                                     sit at the extremes either way). */
+                                                  justify-content: space-between; }
+body.orientation--portrait .checkbox           { width: 12px; height: 12px; flex: 0 0 12px; }
+body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
 
 /* ---- Character block ----------------------------------------------------- */
 
@@ -232,9 +356,9 @@ body.sheet-page {
   height: 18px;
 }
 
-/* Backpack body is a single column of ten numbered slots. The number is
-   rendered via a CSS counter (not the default <ol> marker) so the row can
-   be a flex container with the scratch glyph on the right edge. */
+/* Backpack body is a single column of slots. Number is rendered via a
+   CSS counter (not the default <ol> marker) so the row can be a flex
+   container with the scratch glyph on the right edge. */
 .backpack-grid {
   display: flex;
   gap: 0.12in;
@@ -461,6 +585,25 @@ body.sheet-page {
   word-break: break-word;
 }
 
+/* LitM hollow-lozenge marker rendered before each title / power-tag text.
+   Driven by game.tag_lozenge in the template, so Otherscape leaves the
+   element absent entirely rather than relying on display:none. The
+   container is already display:flex (.tag-row__content) so the icon sits
+   as a fixed-width flex child to the left of the text with the existing
+   0.07in row gap. Size is chosen to match the cap height of the 11pt
+   italic Labrada tag text — the 25×25 viewBox icon renders crisply at
+   this size because the lozenge artwork is symmetrical around the
+   centre. The portrait override below trims it in line with the smaller
+   9pt tag size used on portrait theme cards. */
+.tag-lozenge {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
 /* Scratch glyph: a burn-scratch SVG that sits to the right of every
    scratchable tag (power tags, theme title, new power tag). It is purely
    visual — a place for the player to draw a pen-mark when they actually
@@ -475,26 +618,44 @@ body.sheet-page {
   vertical-align: middle;
 }
 
-/* Power tags — coloured left accent matches the Might level. */
+/* Power tags — the lozenge diamond in front of the text is the sole marker
+   (filled = active, hollow = inactive). No coloured left-border "tab": the
+   official LitM sheet leaves the tag text flush so the diamonds line up
+   cleanly down the card. */
 .tag-row--power {
-  border-left: 2px solid var(--rule);
-  padding-left: 0.07in;
+  padding-left: 0;
 }
-.theme--origin    .tag-row--power { border-left-color: var(--origin); }
-.theme--adventure .tag-row--power { border-left-color: var(--adventure); }
-.theme--greatness .tag-row--power { border-left-color: var(--greatness); }
+
+/* "New power tags" subheading — separates the inactive write-in slots below
+   the weakness tag from the active tags above it (LitM split layout). Small
+   tracked caps, centred, in the muted ink colour so it reads as a quiet
+   section divider rather than a tag. */
+.tag-list__subheading {
+  list-style: none;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 7.5pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0.06in 0 0.02in;
+}
 
 /* Weakness — red accent regardless of Might level, sits below the power tags.
    A double-down-chevron marker sits to the left of the text, matching the
-   official sheet convention. The ::before becomes the first flex item in the
-   row so the existing flex `gap` handles spacing automatically. */
+   official sheet convention. The marker is a ::before on .tag-row__content
+   (the flex container) rather than on the outer .tag-row <li> — the <li> is
+   block-level, so a ::before there would render on its own line and push the
+   text beneath it. Placing it on the flex content makes it the first flex
+   item, so it sits inline to the left of the text with the row's existing
+   0.07in gap handling the spacing. */
 .tag-row--weakness {
   margin-top: 0.05in;
   padding-top: 0.04in;
   border-top: 1px dashed var(--rule);
   color: #6b3a3a;
 }
-.tag-row--weakness::before {
+.tag-row--weakness .tag-row__content::before {
   content: "";
   display: inline-block;
   width: 12px;
@@ -538,6 +699,42 @@ body.sheet-page {
   color: var(--ink-soft);
   display: block;
   margin: 0 0.1in 0.03in;
+}
+
+/* Optional-improvement checkbox indicator. Visually mirrors the .pip
+   rule below (solid-white interior, soft border when unchecked; filled
+   with the theme/accent colour when checked) so the special-checks read
+   as the same family of "tick me if this applies" markers as the
+   UPGRADE / DECAY / ABANDON / IMPROVE / MILESTONE pip tracks. Sits
+   inside .theme__special-label so the box appears on the same line as
+   the "SPECIAL IMPROVEMENT —" / "THEME SPECIAL —" caption text, with
+   the improvement description wrapping below.
+
+   The base rule here is the LitM treatment: round-cornered pip aesthetic
+   matched with a slightly soft border. Otherscape overrides border-color
+   in sheet-otherscape.css for a darker outline on the dark page, and
+   adds per-theme-type fills on the --filled variant (so a Self theme's
+   ticked check fills magenta, Noise cyan, Mythos purple — same hue path
+   as the .pip--filled rules). */
+.theme__special-check {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border: 1px solid var(--ink-soft);
+  vertical-align: middle;
+  margin-right: 0.05in;
+  margin-bottom: 0.012in;
+  box-sizing: border-box;
+}
+.theme__special-check--filled {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+/* Portrait: scale the box down to match the portrait .pip size (10px → 8px). */
+body.orientation--portrait .theme__special-check {
+  width: 8px;
+  height: 8px;
 }
 
 /* ---- Tracks (Abandon / Improve / Milestone) ----------------------------- */

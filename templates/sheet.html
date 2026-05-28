@@ -17,8 +17,13 @@
       <link rel="stylesheet" href="{{ 'static/css/' + game.stylesheet if standalone else url_for('static', filename='css/' + game.stylesheet) }}">
     {% endif %}
   {% endif %}
+  {% if character.orientation == "portrait" %}
+    {# Page-size override has to be a real @page rule, which CSS can't select
+       by body class. Inline it so it only applies to this document. #}
+    <style>@page { size: 8.5in 11in; margin: 0; }</style>
+  {% endif %}
 </head>
-<body class="sheet-page sheet-page--{{ game.id }}">
+<body class="sheet-page sheet-page--{{ game.id }} orientation--{{ character.orientation }}">
 
 {% macro game_icon(filename, extra_class='', base_class='icon') -%}
 <img class="{{ (base_class ~ ' ' ~ extra_class if extra_class else base_class)|trim }}"
@@ -40,10 +45,24 @@
 </div>
 {%- endmacro %}
 
-{% macro tag_row(text, kind='power', blank=False, show_checkbox=True, bar_image='') -%}
+{% macro tag_row(text, kind='power', blank=False, show_checkbox=True, bar_image='', is_active=True) -%}
 <li class="tag-row tag-row--{{ kind }}{{ ' tag-row--blank' if blank }}{{ ' tag-row--no-checkbox' if not show_checkbox }}{{ ' tag-row--bar' if bar_image }}">
   {% if bar_image %}{{ game_image(bar_image) }}{% endif %}
   <div class="tag-row__content">
+    {# Lozenge marker before title + power tags (never weakness — those use
+       the chevron / hazard-stripe treatment instead). When the game ships a
+       filled-lozenge variant (LitM), an ACTIVE tag gets the solid diamond
+       and an inactive one keeps the hollow diamond; the title is always
+       active so it always renders filled. Games without a filled variant
+       (or with tag_lozenge unset, e.g. Otherscape) fall back to the single
+       tag_lozenge for every tag, or render nothing at all. #}
+    {% if game.tag_lozenge and kind in ('title', 'power') %}
+      {% if game.tag_lozenge_filled and is_active %}
+        {{ game_icon(game.tag_lozenge_filled, base_class='tag-lozenge') }}
+      {% else %}
+        {{ game_icon(game.tag_lozenge, base_class='tag-lozenge') }}
+      {% endif %}
+    {% endif %}
     <span class="tag-text">{{ text or '' }}</span>
     {% if show_checkbox %}
     {{ game_icon(game.burn_icon, base_class='checkbox') }}
@@ -65,6 +84,24 @@
           <div class="portrait portrait--empty">portrait</div>
         {% endif %}
       </div>
+      {% if game.show_theme_tally %}
+        {# Vertical theme-type tally: one row per game-profile theme type,
+           showing the type's icon, label, and how many of the character's
+           themes use that type. Renders in profile order so rows are
+           stable across characters (e.g. always Self / Noise / Mythos).
+           Coloured icon comes from tt.tally_icon, falling back to tt.icon. #}
+        <aside class="theme-tally">
+          {% for tt in game.theme_types %}
+            {% set count = character.themes | selectattr('theme_type', 'equalto', tt.id) | list | length %}
+            <div class="theme-tally__row theme-tally__row--{{ tt.id }}">
+              <div class="theme-tally__rotated">
+                {{ game_icon(tt.tally_icon or tt.icon, base_class='theme-tally__icon') }}
+                <span class="theme-tally__label">{{ tt.label | upper }}:{{ count }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </aside>
+      {% endif %}
       <div class="character-info">
         <h1 class="character-name">{{ character.name or "Unnamed" }}</h1>
         {% if character.descriptor %}
@@ -76,6 +113,15 @@
       </div>
     </section>
 
+    {# Inventory + fellowship live in a side-stack wrapper. In landscape it's
+       a transparent flex row that preserves the historical 3-column top-row
+       layout (character | inventory | fellowship). In portrait it flips to
+       a flex column so the two boxes stack vertically on the right, freeing
+       up horizontal space for a wider portrait + character-info column on
+       the left. All orientation logic lives in CSS; this template just
+       provides the grouping. #}
+    <div class="top-row__side">
+
     {# --- MIDDLE: backpack / loadout ------------------------------------ #}
     <section class="inventory-block">
       <div class="inventory-box backpack-box">
@@ -84,14 +130,21 @@
         </h3>
         <div class="backpack-grid">
           <ol class="backpack-list">
-            {% for i in range(10) %}
+            {# Always render exactly `game.loadout_slots` rows — the slot
+               count is a game-design constant (Otherscape 8, LitM 10), so
+               it should look identical regardless of how many entries the
+               character JSON happens to carry. Extra trailing entries in
+               older saves (e.g. a Wilson JSON with 10 entries on the
+               8-slot Otherscape sheet) are silently ignored here, and a
+               subsequent editor save will trim them off naturally. #}
+            {% for i in range(game.loadout_slots) %}
               <li class="backpack-list__item{{ ' backpack-list__item--bar' if game.loadout_bar }}">
                 {% if game.loadout_bar %}{{ game_image(game.loadout_bar) }}{% endif %}
                 <div class="backpack-list__content">
                   {% if not game.loadout_bar %}
                   <span class="backpack-list__num">{{ i + 1 }}.</span>
                   {% endif %}
-                  <span class="slot-text">{{ character.backpack[i] }}</span>
+                  <span class="slot-text">{{ character.backpack[i] if i < character.backpack|length else "" }}</span>
                   {{ game_icon(game.burn_icon, base_class='checkbox') }}
                 </div>
               </li>
@@ -132,6 +185,8 @@
       </div>
     </section>
 
+    </div>{# /.top-row__side #}
+
   </div>{# /.top-row #}
 
   {# --- BOTTOM ROW: 4 theme cards ------------------------------------- #}
@@ -151,18 +206,49 @@
         <h3 class="theme__title{{ ' theme__title--bar' if tt.tag_bar }}">
           {% if tt.tag_bar %}{{ game_image(tt.tag_bar) }}{% endif %}
           <div class="theme__title__content">
+            {# The title tag is always active, so it always gets the filled
+               lozenge when a filled variant exists; otherwise the single
+               hollow lozenge. #}
+            {% if game.tag_lozenge %}
+              {{ game_icon(game.tag_lozenge_filled or game.tag_lozenge, base_class='tag-lozenge') }}
+            {% endif %}
             <span class="tag-text">{{ theme.title }}</span>
             {{ game_icon(game.burn_icon, base_class='checkbox') }}
           </div>
         </h3>
 
         <ul class="tag-list">
-          {% for tag in theme.power_tags %}
-            {{ tag_row(tag, kind='power', blank=(not tag), bar_image=tt.tag_bar) }}
-          {% endfor %}
-          {% for w in theme.weakness_tags %}
-            {{ tag_row(w, kind='weakness', show_checkbox=False, blank=(not w), bar_image=game.weakness_bar) }}
-          {% endfor %}
+          {% if game.split_inactive_below_weakness %}
+            {# LitM layout: active power tags above the weakness, inactive
+               ones below it under the "new power tags" subheading. Active
+               tags get the filled diamond, inactive the hollow one. No
+               bar image — the diamond is the sole marker. #}
+            {% set active_tags, inactive_tags = theme.power_tags_split() %}
+            {% for tag, is_active in active_tags %}
+              {{ tag_row(tag, kind='power', blank=(not tag), is_active=True) }}
+            {% endfor %}
+            {% for w in theme.weakness_tags %}
+              {{ tag_row(w, kind='weakness', show_checkbox=False, blank=(not w), bar_image=game.weakness_bar) }}
+            {% endfor %}
+            {% if inactive_tags %}
+              <li class="tag-list__subheading">{{ game.inactive_tags_label }}</li>
+              {% for tag, is_active in inactive_tags %}
+                {{ tag_row(tag, kind='power', blank=(not tag), is_active=False) }}
+              {% endfor %}
+            {% endif %}
+          {% else %}
+            {# Otherscape layout: all power tags in one block above the
+               weakness. The helper returns (text, is_active) pairs; active
+               ones float to the top and swap to the coloured bar, inactive
+               ones sink and use the to-burn bar. #}
+            {% for tag, is_active in theme.power_tags_in_render_order(game.sort_tags_by_active) %}
+              {% set bar = tt.tag_bar if (is_active or not tt.tag_bar_inactive) else tt.tag_bar_inactive %}
+              {{ tag_row(tag, kind='power', blank=(not tag), bar_image=bar, is_active=is_active) }}
+            {% endfor %}
+            {% for w in theme.weakness_tags %}
+              {{ tag_row(w, kind='weakness', show_checkbox=False, blank=(not w), bar_image=game.weakness_bar) }}
+            {% endfor %}
+          {% endif %}
         </ul>
 
         <div class="theme__tracks">
@@ -179,6 +265,14 @@
         </div>
 
         {% if theme.quest %}
+          {# Otherscape opts into a small caps title above each theme's motto:
+             "IDENTITY" for Self themes, "RITUAL" for Mythos, "ITCH" for Noise.
+             The label string already lives on ThemeType.quest_label so the
+             template just renders it when the current game switches the flag on.
+             LitM leaves it off — its mottos run without a header label. #}
+          {% if game.show_quest_label %}
+            <p class="theme__motto-label">{{ tt.quest_label }}</p>
+          {% endif %}
           <p class="theme__motto">{{ theme.quest }}</p>
         {% endif %}
 
@@ -186,10 +280,20 @@
           <p class="theme__description">{{ theme.quest_description }}</p>
         {% endif %}
 
-        {% for imp in theme.special_improvements if imp %}
+        {# Iterate by index so we can pair each non-empty improvement text with
+           its matching filled-state boolean. The earlier
+           `for imp in theme.special_improvements if imp` form dropped the
+           index, which would have decoupled the text from the checkbox.
+           The check sits inside the label span so both share the same line
+           (the label is display:block, so putting the check before it as a
+           sibling would force a line break between them). The improvement
+           description text flows on the next line naturally. #}
+        {% for k in range(theme.special_improvements|length) if theme.special_improvements[k] %}
           <p class="theme__special">
-            <span class="theme__special-label">Special improvement —</span>
-            {{ imp }}
+            <span class="theme__special-label">
+              <span class="theme__special-check{{ ' theme__special-check--filled' if theme.special_improvements_filled[k] else '' }}"></span>{{ game.special_label }} —
+            </span>
+            {{ theme.special_improvements[k] }}
           </p>
         {% endfor %}
       </article>
