@@ -13,10 +13,11 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .games import get_game
 from .models import Character
+from .paths import resource_root, templates_dir, static_dir
 
-ROOT = Path(__file__).resolve().parent.parent
-TEMPLATES = ROOT / "templates"
-STATIC = ROOT / "static"
+ROOT = resource_root()
+TEMPLATES = templates_dir()
+STATIC = static_dir()
 
 
 def _env() -> Environment:

@@ -1,0 +1,9 @@
+# Build & runtime artifacts — never shipped as source
+.venv/
+.build-venv/
+build/
+dist/
+__pycache__/
+*.pyc
+*.spec.bak
+_tmp.pdf

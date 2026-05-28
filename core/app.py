@@ -23,16 +23,18 @@ from flask import Flask, render_template, request, send_file, jsonify, abort
 from .games import GAMES, get_game, DEFAULT_GAME_ID
 from .models import Character, Theme
 from .render import render_sheet_html, render_sheet_pdf
+from .paths import templates_dir, static_dir, characters_dir
 
-ROOT = Path(__file__).resolve().parent.parent
-CHARACTERS_DIR = ROOT / "characters"
+# Writable characters library — resolves next to the executable when frozen,
+# or the project root from source. Created/seeded on first access.
+CHARACTERS_DIR = characters_dir()
 
 
 def create_app() -> Flask:
     app = Flask(
         __name__,
-        template_folder=str(ROOT / "templates"),
-        static_folder=str(ROOT / "static"),
+        template_folder=str(templates_dir()),
+        static_folder=str(static_dir()),
     )
 
     # ---- editor ------------------------------------------------------------
@@ -93,7 +95,11 @@ def create_app() -> Flask:
         slug = _slug(character.name) or "character"
         buf = io.BytesIO()
         try:
-            tmp_path = ROOT / "_tmp.pdf"
+            # Render to a scratch file in the OS temp dir (the resource root is
+            # read-only when frozen), then stream its bytes back to the client.
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tf:
+                tmp_path = Path(tf.name)
             render_sheet_pdf(character, tmp_path)
             buf.write(tmp_path.read_bytes())
             tmp_path.unlink(missing_ok=True)
@@ -117,7 +123,12 @@ def create_app() -> Flask:
             abort(400, "Character needs a name before saving.")
         path = _character_path(character.game, slug)
         character.save(path)
-        return jsonify({"ok": True, "slug": slug, "game": character.game, "path": str(path.relative_to(ROOT))})
+        # Report a friendly relative path (relative to the characters library).
+        try:
+            rel = str(path.relative_to(CHARACTERS_DIR.parent))
+        except ValueError:
+            rel = str(path)
+        return jsonify({"ok": True, "slug": slug, "game": character.game, "path": rel})
 
     @app.route("/characters")
     def list_characters():
