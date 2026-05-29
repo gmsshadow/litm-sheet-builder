@@ -7,6 +7,7 @@ Python installed.
 |----------|:------------------:|--------|----------|
 | **A. Launcher scripts** (`run.bat` / `run.sh`) | Yes (3.10+) | Zero build step | Quick sharing, technical users, your own machines |
 | **B. Standalone build** (PyInstaller `.exe` / binary) | No | Build once per OS | Sharing with non-technical users |
+| **C. Automated builds** (GitHub Actions) | No | Push a release | Hands-off `.exe` + Linux binary on every release |
 
 Both produce the same app: a small local web server that opens in the browser.
 The window stays open while you use it; close it to quit.
@@ -64,7 +65,35 @@ saves go there.
 
 ---
 
-## PDF export: the WeasyPrint native-library note
+## C. Automated builds via GitHub Actions
+
+`.github/workflows/build.yml` builds **both** the Windows `.exe` and the Linux
+binary on GitHub's runners, so you never need a Windows machine yourself.
+
+**To cut a release:**
+1. Push your code to GitHub.
+2. Create a Release (Releases → Draft a new release → pick a tag like `v1.0.0`
+   → Publish).
+3. The workflow runs two jobs in parallel — one on `ubuntu-latest`, one on
+   `windows-latest` — and attaches `LitM-Sheet-Builder-linux-x64.zip` and
+   `LitM-Sheet-Builder-windows-x64.zip` to that release automatically.
+
+You can also trigger it by hand (Actions → "Build standalone executables" →
+Run workflow); manual runs upload the zips as workflow **artifacts** instead of
+attaching them to a release.
+
+Each job installs the GTK/Pango libraries WeasyPrint needs (via `apt` on Linux,
+via MSYS2's mingw-w64 packages on Windows), runs the same
+`litm_sheet_builder.spec`, then **smoke-tests** the built binary by rendering a
+PDF — so a broken bundle fails the build instead of shipping.
+
+> **Note on the Windows GTK step:** bundling Pango/Cairo on Windows is the one
+> part that can be finicky across runner-image updates. If a future Windows
+> build fails to find the GTK DLLs, the fix is almost always in the "Put GTK
+> DLLs on PATH" step of the workflow — adjust the mingw64 path or pin the MSYS2
+> package versions.
+
+---
 
 The editor, preview, and JSON save/load work with pure-Python packages. **PDF
 export** uses [WeasyPrint](https://weasyprint.org/), which renders text through

@@ -1,0 +1,139 @@
+name: Build standalone executables
+
+# Builds a self-contained Windows .exe and Linux binary, then attaches both
+# (zipped) to the GitHub Release that triggered the run. Also uploads them as
+# workflow artifacts so manual runs produce downloadable builds too.
+#
+# Triggers:
+#   * Publishing a GitHub Release  -> builds and attaches the zips to it
+#   * Manual "Run workflow" button -> builds and uploads artifacts only
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write          # required to upload assets onto the release
+
+jobs:
+  # ------------------------------------------------------------------ Linux --
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install WeasyPrint's native libraries
+        # Pango/Cairo/gdk-pixbuf must be present so PyInstaller can detect and
+        # copy them into the bundle. These are the same libs the README lists
+        # for Linux PDF export.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libpango-1.0-0 libpangocairo-1.0-0 \
+            libgdk-pixbuf-2.0-0 libharfbuzz0b libffi8
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+
+      - name: Build with PyInstaller
+        run: pyinstaller --noconfirm --clean litm_sheet_builder.spec
+
+      - name: Smoke-test the binary (render a PDF)
+        # Fail the build early if WeasyPrint didn't bundle correctly, rather
+        # than shipping a broken binary.
+        run: |
+          ./dist/LitM-Sheet-Builder/LitM-Sheet-Builder pdf characters/litm/bumbler.json /tmp/ci-test.pdf
+          test -s /tmp/ci-test.pdf && echo "PDF rendered OK"
+
+      - name: Package
+        run: |
+          cd dist
+          zip -r ../LitM-Sheet-Builder-linux-x64.zip LitM-Sheet-Builder
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LitM-Sheet-Builder-linux-x64
+          path: LitM-Sheet-Builder-linux-x64.zip
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: LitM-Sheet-Builder-linux-x64.zip
+
+  # ---------------------------------------------------------------- Windows --
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # WeasyPrint on Windows needs GTK's Pango/Cairo DLLs. We install them via
+      # MSYS2's mingw-w64 packages, then put mingw64\bin on PATH so that both
+      # WeasyPrint (which loads them via ctypes at runtime) and PyInstaller
+      # (which must find them to bundle them) can see them. The build itself
+      # runs under the normal setup-python CPython, which produces an .exe that
+      # runs on a stock Windows machine with no MSYS2 present.
+      - name: Install GTK (Pango/Cairo) via MSYS2
+        id: msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-pango
+            mingw-w64-x86_64-cairo
+            mingw-w64-x86_64-gdk-pixbuf2
+            mingw-w64-x86_64-harfbuzz
+            mingw-w64-x86_64-fontconfig
+
+      - name: Put GTK DLLs on PATH
+        shell: pwsh
+        run: |
+          # The action exposes its install root; mingw64\bin holds the DLLs.
+          $mingw = Join-Path "${{ steps.msys2.outputs.msys2-location }}" "mingw64\bin"
+          if (-not (Test-Path $mingw)) { $mingw = "C:\msys64\mingw64\bin" }  # fallback
+          Write-Host "Adding to PATH: $mingw"
+          Add-Content -Path $env:GITHUB_PATH -Value $mingw
+          # Also expose it to WeasyPrint's loader for this job explicitly.
+          Add-Content -Path $env:GITHUB_ENV -Value "WEASYPRINT_DLL_DIRECTORIES=$mingw"
+
+      - name: Install Python dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+
+      - name: Build with PyInstaller
+        shell: pwsh
+        run: pyinstaller --noconfirm --clean litm_sheet_builder.spec
+
+      - name: Smoke-test the binary (render a PDF)
+        shell: pwsh
+        run: |
+          .\dist\LitM-Sheet-Builder\LitM-Sheet-Builder.exe pdf characters\litm\bumbler.json $env:TEMP\ci-test.pdf
+          if ((Get-Item "$env:TEMP\ci-test.pdf").Length -gt 0) { Write-Host "PDF rendered OK" } else { exit 1 }
+
+      - name: Package
+        shell: pwsh
+        run: Compress-Archive -Path dist\LitM-Sheet-Builder -DestinationPath LitM-Sheet-Builder-windows-x64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LitM-Sheet-Builder-windows-x64
+          path: LitM-Sheet-Builder-windows-x64.zip
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: LitM-Sheet-Builder-windows-x64.zip
