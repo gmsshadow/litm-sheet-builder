@@ -642,20 +642,23 @@ body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
 }
 
 /* Weakness — red accent regardless of Might level, sits below the power tags.
-   A double-down-chevron marker sits to the left of the text, matching the
-   official sheet convention. The marker is a ::before on .tag-row__content
+   A double-down-chevron marker sits to the left of the text on LitM, matching
+   the official sheet convention. The marker is a ::before on .tag-row__content
    (the flex container) rather than on the outer .tag-row <li> — the <li> is
    block-level, so a ::before there would render on its own line and push the
    text beneath it. Placing it on the flex content makes it the first flex
    item, so it sits inline to the left of the text with the row's existing
-   0.07in gap handling the spacing. */
+   0.07in gap handling the spacing.
+   Scoped to .sheet-page--litm — the Otherscape sheet uses the yellow
+   hazard-stripe selection bar as its own weakness signal and doesn't need an
+   extra chevron alongside it. */
 .tag-row--weakness {
   margin-top: 0.05in;
   padding-top: 0.04in;
   border-top: 1px dashed var(--rule);
   color: #6b3a3a;
 }
-.tag-row--weakness .tag-row__content::before {
+.sheet-page--litm .tag-row--weakness .tag-row__content::before {
   content: "";
   display: inline-block;
   width: 12px;
