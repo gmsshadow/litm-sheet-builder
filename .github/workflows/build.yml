@@ -74,6 +74,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
+        id: pyver
         with:
           python-version: "3.12"
 
@@ -83,6 +84,12 @@ jobs:
       # (which must find them to bundle them) can see them. The build itself
       # runs under the normal setup-python CPython, which produces an .exe that
       # runs on a stock Windows machine with no MSYS2 present.
+      #
+      # IMPORTANT: mingw64\bin also contains its own python.exe, which would
+      # shadow setup-python on PATH and break pip. We work around this by
+      # invoking setup-python's interpreter by its full path in every step
+      # below (PYTHON env var = steps.pyver.outputs.python-path) rather than
+      # relying on PATH resolution for the word "python".
       - name: Install GTK (Pango/Cairo) via MSYS2
         id: msys2
         uses: msys2/setup-msys2@v2
@@ -104,18 +111,22 @@ jobs:
           if (-not (Test-Path $mingw)) { $mingw = "C:\msys64\mingw64\bin" }  # fallback
           Write-Host "Adding to PATH: $mingw"
           Add-Content -Path $env:GITHUB_PATH -Value $mingw
-          # Also expose it to WeasyPrint's loader for this job explicitly.
+          # Also expose it to WeasyPrint's loader explicitly.
           Add-Content -Path $env:GITHUB_ENV -Value "WEASYPRINT_DLL_DIRECTORIES=$mingw"
+          # Stash the full path to setup-python's interpreter so later steps
+          # can invoke it directly, ignoring mingw's python.exe on PATH.
+          Add-Content -Path $env:GITHUB_ENV -Value "PYTHON=${{ steps.pyver.outputs.python-path }}"
 
       - name: Install Python dependencies
         shell: pwsh
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt pyinstaller
+          & "$env:PYTHON" -m pip install --upgrade pip
+          & "$env:PYTHON" -m pip install -r requirements.txt pyinstaller
 
       - name: Build with PyInstaller
         shell: pwsh
-        run: pyinstaller --noconfirm --clean litm_sheet_builder.spec
+        run: |
+          & "$env:PYTHON" -m PyInstaller --noconfirm --clean litm_sheet_builder.spec
 
       - name: Smoke-test the binary (render a PDF)
         shell: pwsh
