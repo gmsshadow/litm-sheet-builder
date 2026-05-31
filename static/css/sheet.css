@@ -500,6 +500,65 @@ body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
   line-height: 1.25;
 }
 
+/* LitM theme cards — colour wash with an abrupt transition right under the
+   ABANDON/IMPROVE/MILESTONE tracks. The upper portion of every card (banner,
+   tags, weakness, "new power tags", tracks) reads on clean parchment; just
+   below the tracks the background steps almost-cleanly to a fully-opaque
+   theme-type colour that holds for the rest of the card (quest motto,
+   description, special-improvement).
+
+   The four-stop gradient is shaped as a near-step function: transparent up
+   to 65%, a tight 5% transition between 65% and 70%, then solid 1.0-alpha
+   theme colour holding all the way to the bottom. 65% lands just under
+   where the tracks naturally end on a typical card layout, so the pips
+   stay crisp on parchment instead of being half-buried in colour. The
+   tight 5% fade reads as a deliberate edge rather than a soft wash, while
+   still being smooth enough not to look like a printer banding artefact.
+   Scoped to .sheet-page--litm so Otherscape's bar-style cards stay untouched. */
+.sheet-page--litm .theme--origin {
+  background-image: linear-gradient(to bottom,
+    transparent 0%,
+    transparent 45%,
+    rgba(63, 92, 47, 1.0) 49%,
+    rgba(63, 92, 47, 1.0) 100%);
+}
+.sheet-page--litm .theme--adventure {
+  background-image: linear-gradient(to bottom,
+    transparent 0%,
+    transparent 45%,
+    rgba(122, 31, 31, 1.0) 49%,
+    rgba(122, 31, 31, 1.0) 100%);
+}
+.sheet-page--litm .theme--greatness {
+  background-image: linear-gradient(to bottom,
+    transparent 0%,
+    transparent 45%,
+    rgba(74, 47, 96, 1.0) 49%,
+    rgba(74, 47, 96, 1.0) 100%);
+}
+
+/* Recolour the quest motto, description prose, and special-improvement block
+   to a warm cream-white on LitM, where they sit on the saturated bottom of
+   the wash. The default brown ink (var(--ink-soft) / var(--ink)) would lose
+   contrast against the dark green/red/purple wash; cream-white keeps the
+   text legible while staying in the warm palette of the rest of the page.
+   The special-improvement checkbox also gets white borders and a white-fill
+   "taken" state so it remains visible against the colour. */
+.sheet-page--litm .theme__motto,
+.sheet-page--litm .theme__description,
+.sheet-page--litm .theme__special-label,
+.sheet-page--litm .theme__special {
+  color: #fffaeb;
+}
+.sheet-page--litm .theme__special-check {
+  border-color: #fffaeb;
+  background-color: transparent;
+}
+.sheet-page--litm .theme__special-check--filled {
+  background-color: #fffaeb;
+  border-color: #fffaeb;
+}
+
 /* Decorative bar/header images sit behind text via <img class="bar-bg"> so
    WeasyPrint does not dim CSS background-images under translucent parents. */
 .bar-bg {
@@ -585,6 +644,44 @@ body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
   word-break: break-word;
 }
 
+/* LitM theme cards — centred text throughout (titles, tag text, weakness,
+   quest motto, description, special-improvement, "new power tags" subheading).
+   The official LitM sheet centres every line inside a theme card; this single
+   rule cascades through to all block-level text descendants. The tag rows are
+   flex containers — diamond marker pinned to the left edge, burn icon pinned
+   to the right — but the .tag-text span between them has flex:1 1 auto, so
+   centring its inner text reads as the row text floating in the middle
+   between the two markers (which is exactly what the printed sheet does).
+   Otherscape keeps its left-aligned bar rows untouched. */
+.sheet-page--litm .theme {
+  text-align: center;
+}
+
+/* Watercolor-style highlight behind LitM tag text — yellow/cream for the
+   title, power tags, and "new power tag" write-ins; warm peach for the
+   weakness tag. Mirrors the printed sheet's highlighter-pen treatment.
+
+   The highlight is on an INNER span (.tag-text__highlight) sitting inside
+   .tag-text, which the template only emits when there's actual text — so
+   empty write-in slots stay clean instead of showing a stub highlight.
+
+   `display: inline` lets the background flow with the text just like a
+   highlighter would; padding gives the colour a few pixels of breathing
+   room around the words. `box-decoration-break: clone` makes each visual
+   line of wrapped text get its own padded highlight rectangle, instead of
+   a single odd block spanning the gap between lines. Scoped to LitM only
+   so Otherscape's bar treatment is untouched. */
+.sheet-page--litm .tag-text__highlight {
+  background-color: #f3e2a8;
+  padding: 0.02em 0.35em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  border-radius: 1px;
+}
+.sheet-page--litm .tag-row--weakness .tag-text__highlight {
+  background-color: #f5cca8;
+}
+
 /* LitM hollow-lozenge marker rendered before each title / power-tag text.
    Driven by game.tag_lozenge in the template, so Otherscape leaves the
    element absent entirely rather than relying on display:none. The
@@ -642,28 +739,26 @@ body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
 }
 
 /* Weakness — red accent regardless of Might level, sits below the power tags.
-   A double-down-chevron marker sits to the left of the text on LitM, matching
-   the official sheet convention. The marker is a ::before on .tag-row__content
-   (the flex container) rather than on the outer .tag-row <li> — the <li> is
-   block-level, so a ::before there would render on its own line and push the
-   text beneath it. Placing it on the flex content makes it the first flex
-   item, so it sits inline to the left of the text with the row's existing
-   0.07in gap handling the spacing.
-   Scoped to .sheet-page--litm — the Otherscape sheet uses the yellow
-   hazard-stripe selection bar as its own weakness signal and doesn't need an
-   extra chevron alongside it. */
+   On LitM the double-down-chevron marker sits inside the highlight span,
+   inline with the text, so it shares the peach background and reads as a
+   single highlighted block ([chevron] [text]). It's a ::before on the
+   .tag-text__highlight element rather than on .tag-row__content, so its
+   colour is bounded by the highlight rectangle exactly the way the printed
+   sheet draws it. The Otherscape sheet uses the yellow hazard-stripe bar as
+   its own weakness signal and skips this chevron entirely. */
 .tag-row--weakness {
   margin-top: 0.05in;
   padding-top: 0.04in;
   border-top: 1px dashed var(--rule);
   color: #6b3a3a;
 }
-.sheet-page--litm .tag-row--weakness .tag-row__content::before {
+.sheet-page--litm .tag-row--weakness .tag-text__highlight::before {
   content: "";
   display: inline-block;
   width: 12px;
   height: 11px;
-  flex: 0 0 12px;
+  margin-right: 0.05in;
+  vertical-align: -1px;          /* nudge so it sits on the text's optical baseline rather than the cap line */
   background-image: url("../icons/weakness-marker.svg");
   background-size: contain;
   background-repeat: no-repeat;

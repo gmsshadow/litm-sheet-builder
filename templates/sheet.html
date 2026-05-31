@@ -63,7 +63,7 @@
         {{ game_icon(game.tag_lozenge, base_class='tag-lozenge') }}
       {% endif %}
     {% endif %}
-    <span class="tag-text">{{ text or '' }}</span>
+    <span class="tag-text">{% if text %}<span class="tag-text__highlight">{{ text }}</span>{% endif %}</span>
     {% if show_checkbox %}
     {{ game_icon(game.burn_icon, base_class='checkbox') }}
     {% endif %}
@@ -141,10 +141,25 @@
               <li class="backpack-list__item{{ ' backpack-list__item--bar' if game.loadout_bar }}">
                 {% if game.loadout_bar %}{{ game_image(game.loadout_bar) }}{% endif %}
                 <div class="backpack-list__content">
-                  {% if not game.loadout_bar %}
-                  <span class="backpack-list__num">{{ i + 1 }}.</span>
+                  {# Marker before the backpack item text. Three cases:
+                       - Otherscape (game.loadout_bar set): no number, no
+                         diamond; the colored bar IS the marker.
+                       - LitM (game.tag_lozenge set, no loadout_bar): a
+                         diamond — filled if the slot's backpack_active
+                         flag is True, hollow otherwise. Same active-mark
+                         semantics as the theme power tags.
+                       - Any other game without either: fall back to a
+                         numbered row prefix (1., 2., …) for legibility. #}
+                  {% if game.loadout_bar %}
+                    {# no leading marker — the bar fills the row #}
+                  {% elif game.tag_lozenge %}
+                    {% set bp_active = character.backpack_active[i] if i < character.backpack_active|length else False %}
+                    {{ game_icon(game.tag_lozenge_filled if (bp_active and game.tag_lozenge_filled) else game.tag_lozenge, base_class='tag-lozenge') }}
+                  {% else %}
+                    <span class="backpack-list__num">{{ i + 1 }}.</span>
                   {% endif %}
-                  <span class="slot-text">{{ character.backpack[i] if i < character.backpack|length else "" }}</span>
+                  {% set bp = character.backpack[i] if i < character.backpack|length else "" %}
+                  <span class="slot-text">{% if bp %}<span class="tag-text__highlight">{{ bp }}</span>{% endif %}</span>
                   {{ game_icon(game.burn_icon, base_class='checkbox') }}
                 </div>
               </li>
@@ -168,7 +183,7 @@
           {% for i in range(5) %}
             <div class="fellowship-row">
               <div class="fellowship-cell">{{ character.fellowship_companions[i] }}</div>
-              <div class="fellowship-cell">{{ character.fellowship_tags[i] }}</div>
+              <div class="fellowship-cell">{% if character.fellowship_tags[i] %}<span class="tag-text__highlight">{{ character.fellowship_tags[i] }}</span>{% endif %}</div>
             </div>
           {% endfor %}
         </div>
@@ -212,7 +227,7 @@
             {% if game.tag_lozenge %}
               {{ game_icon(game.tag_lozenge_filled or game.tag_lozenge, base_class='tag-lozenge') }}
             {% endif %}
-            <span class="tag-text">{{ theme.title }}</span>
+            <span class="tag-text">{% if theme.title %}<span class="tag-text__highlight">{{ theme.title }}</span>{% endif %}</span>
             {{ game_icon(game.burn_icon, base_class='checkbox') }}
           </div>
         </h3>

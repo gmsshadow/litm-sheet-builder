@@ -136,6 +136,7 @@ LITM = GameProfile(
     starting_active_tags=0,
     split_inactive_below_weakness=True,
     inactive_tags_label="New power tags",
+    loadout_slots=8,
     background="bg-yellow-old-paper-textures.webp",
     stylesheet="",                     # base sheet.css already encodes LitM styling
 )

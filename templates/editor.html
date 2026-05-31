@@ -62,9 +62,18 @@
       {# Always render `game.loadout_slots` rows, padding short backpacks
          with empty inputs and ignoring any extra entries beyond the slot
          count. Matches the sheet-render behaviour, so what you see in the
-         editor is exactly what gets printed. #}
+         editor is exactly what gets printed. For games that mark backpack
+         items active/inactive (LitM diamond checkbox), each row also gets
+         a leading checkbox — ticked items render with the filled diamond. #}
       {% for k in range(game.loadout_slots) %}
-        <label>#{{ k + 1 }} <input type="text" name="backpack_{{ k }}" value="{{ character.backpack[k] if k < character.backpack|length else '' }}"></label>
+        <label class="backpack-edit-row{% if game.uses_power_tag_active_toggle %} backpack-edit-row--with-check{% endif %}">
+          {% if game.uses_power_tag_active_toggle %}
+            <input type="checkbox" name="backpack_active_{{ k }}" value="1"{% if k < character.backpack_active|length and character.backpack_active[k] %} checked{% endif %} title="Mark active">
+          {% else %}
+            <span class="backpack-edit-row__num">#{{ k + 1 }}</span>
+          {% endif %}
+          <input type="text" name="backpack_{{ k }}" value="{{ character.backpack[k] if k < character.backpack|length else '' }}">
+        </label>
       {% endfor %}
     </div>
   </fieldset>

@@ -201,6 +201,12 @@ class Character:
     quote: str = ""                   # italic flavour quote
     portrait_path: Optional[str] = None
     backpack: list[str] = field(default_factory=lambda: [""] * 10)
+    # Parallel boolean list — True means the backpack item is "active"
+    # (filled diamond marker on LitM, which uses this as a check-box-style
+    # mark for items currently in play). Always kept the same length as
+    # backpack by from_dict. Games that don't use the diamond markers
+    # (Otherscape) just ignore this field.
+    backpack_active: list[bool] = field(default_factory=lambda: [False] * 10)
     fellowship_companions: list[str] = field(default_factory=lambda: [""] * 5)
     fellowship_tags: list[str] = field(default_factory=lambda: [""] * 5)
     promise_pips: int = 0             # 0–5; only rendered when the game has a promise track
@@ -264,6 +270,7 @@ class Character:
             quote=d.get("quote", ""),
             portrait_path=d.get("portrait_path"),
             backpack=list(d.get("backpack", [])),  # preserve authored count; template pads up to game.loadout_slots
+            backpack_active=_pad_active(d.get("backpack_active", []), len(d.get("backpack", []))),
             fellowship_companions=_fixlen(d.get("fellowship_companions", []), 5),
             fellowship_tags=_fixlen(d.get("fellowship_tags", []), 5),
             promise_pips=int(d.get("promise_pips", 0) or 0),
@@ -290,3 +297,15 @@ def _fixlen(items: list, length: int) -> list:
     """Pad with empty strings (or truncate) so the list is exactly `length` long."""
     items = list(items) + [""] * length
     return items[:length]
+
+
+def _pad_active(seq, target_len: int) -> list[bool]:
+    """Coerce a sequence of truthy/falsy values to a fixed-length list of
+    bools, padding missing entries with False. Used to keep a parallel
+    active-state list in lockstep with its text-content list — newer code
+    can rely on `len(active) == len(text)` even when older JSONs omit the
+    active field entirely."""
+    out = [bool(x) for x in seq]
+    while len(out) < target_len:
+        out.append(False)
+    return out[:target_len]
