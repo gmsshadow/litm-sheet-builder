@@ -60,12 +60,12 @@
   --rule:         #8a6d44;
 
   /* Might level theme colours */
-  --origin:        #3f5c2f;
-  --origin-soft:   #6b8654;
-  --adventure:     #7a1f1f;
-  --adventure-soft:#a85050;
-  --greatness:     #4a2f60;
-  --greatness-soft:#7a5a9a;
+  --origin:        #688054;
+  --origin-soft:   #93ab7e;
+  --adventure:     #964e3a;
+  --adventure-soft:#c07a64;
+  --greatness:     #544c8c;
+  --greatness-soft:#807aba;
 
   /* Typography */
   --font-display: "Manuskript Antiqua", "Labrada", "EB Garamond", "Cardo", Georgia, serif;
@@ -233,12 +233,12 @@ body.orientation--portrait .top-row__side .fellowship-row--header .fellowship-ce
 body.orientation--portrait .theme__title       { font-size: 9pt;  }
 body.orientation--portrait .tag-row            { font-size: 9pt;  min-height: 1.2em; padding: 0.018in 0; }
 body.orientation--portrait .theme__section-label,
-body.orientation--portrait .theme__special-label { font-size: 6pt; }
+body.orientation--portrait .theme__special-subtitle { font-size: 6pt; }
 body.orientation--portrait .track__label       { font-size: 6.5pt; letter-spacing: 0.04em; }
 body.orientation--portrait .pip                { width: 8px; height: 8px; }
-body.orientation--portrait .theme__motto       { font-size: 7.5pt; margin-top: 0.04in; }
+body.orientation--portrait .theme__motto       { font-size: 8pt; margin-top: 0.04in; }
 body.orientation--portrait .theme__description,
-body.orientation--portrait .theme__special     { font-size: 7pt; margin-top: 0.03in; line-height: 1.15; }
+body.orientation--portrait .theme__special     { font-size: 6pt; margin-top: 0.03in; line-height: 1.12; }
 body.orientation--portrait .theme__tracks      { margin-top: 0.05in; gap: 0.06in;
                                                   /* Spread the three track labels (Abandon / Improve /
                                                      Milestone for LitM) to the ends and centre of the
@@ -302,7 +302,8 @@ body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
   padding-left: 0.12in;
   border-left: 2px solid var(--rule);
   color: var(--ink-soft);
-  font-size: 10pt;
+  font-size: 8pt;
+  line-height: 1.25;
 }
 
 /* ---- Block headings ------------------------------------------------------ */
@@ -494,68 +495,86 @@ body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
   display: block;
   background: rgba(255,250,235,0.55);
   border: 1px solid var(--rule);
-  padding: 0 0 0.08in 0;
+  padding: 0;
   overflow: hidden;
   font-size: 8.5pt;
   line-height: 1.25;
 }
 
-/* LitM theme cards — colour wash with an abrupt transition right under the
-   ABANDON/IMPROVE/MILESTONE tracks. The upper portion of every card (banner,
-   tags, weakness, "new power tags", tracks) reads on clean parchment; just
-   below the tracks the background steps almost-cleanly to a fully-opaque
-   theme-type colour that holds for the rest of the card (quest motto,
-   description, special-improvement).
+/* LitM cards are flex columns so the colour wash can stretch to fill the
+   remaining height down to the card's bottom edge. The themes-row already
+   stretches every card to equal (tallest-card) height; without this, a card
+   with little text leaves a strip of parchment below its wash. Making the
+   wash a flex child with flex:1 pushes its background all the way down. */
+.sheet-page--litm .theme {
+  display: flex;
+  flex-direction: column;
+}
+.sheet-page--litm .theme__wash {
+  flex: 1 1 auto;
+}
 
-   The four-stop gradient is shaped as a near-step function: transparent up
-   to 65%, a tight 5% transition between 65% and 70%, then solid 1.0-alpha
-   theme colour holding all the way to the bottom. 65% lands just under
-   where the tracks naturally end on a typical card layout, so the pips
-   stay crisp on parchment instead of being half-buried in colour. The
-   tight 5% fade reads as a deliberate edge rather than a soft wash, while
-   still being smooth enough not to look like a printer banding artefact.
-   Scoped to .sheet-page--litm so Otherscape's bar-style cards stay untouched. */
-.sheet-page--litm .theme--origin {
+/* LitM theme cards — the colour wash is anchored to the END OF THE TRACKS,
+   not a percentage of card height. Everything below ABANDON/IMPROVE/MILESTONE
+   lives in .theme__wash, which carries the solid theme colour. A short
+   fade-in over the first ~0.16in of the wash keeps the soft edge you'd get
+   from a gradient while guaranteeing the pips above always sit on clean
+   parchment regardless of how much text a card holds. Scoped to
+   .sheet-page--litm so Otherscape's bar-style cards stay untouched. */
+.sheet-page--litm .theme__wash {
+  margin-top: 0.04in;
+  padding: 0.10in 0.10in 0.02in;
+  /* The fade: transparent at the very top easing into the solid theme colour.
+     The solid colour itself is set per-type below via --wash. */
   background-image: linear-gradient(to bottom,
-    transparent 0%,
-    transparent 45%,
-    rgba(63, 92, 47, 1.0) 49%,
-    rgba(63, 92, 47, 1.0) 100%);
+    transparent 0,
+    var(--wash) 0.16in,
+    var(--wash) 100%);
 }
-.sheet-page--litm .theme--adventure {
-  background-image: linear-gradient(to bottom,
-    transparent 0%,
-    transparent 45%,
-    rgba(122, 31, 31, 1.0) 49%,
-    rgba(122, 31, 31, 1.0) 100%);
-}
-.sheet-page--litm .theme--greatness {
-  background-image: linear-gradient(to bottom,
-    transparent 0%,
-    transparent 45%,
-    rgba(74, 47, 96, 1.0) 49%,
-    rgba(74, 47, 96, 1.0) 100%);
-}
+.sheet-page--litm .theme__wash--origin    { --wash: rgba(104, 128, 84, 1.0); }
+.sheet-page--litm .theme__wash--adventure { --wash: rgba(150, 78, 58, 1.0); }
+.sheet-page--litm .theme__wash--greatness { --wash: rgba(84, 76, 140, 1.0); }
 
 /* Recolour the quest motto, description prose, and special-improvement block
    to a warm cream-white on LitM, where they sit on the saturated bottom of
    the wash. The default brown ink (var(--ink-soft) / var(--ink)) would lose
    contrast against the dark green/red/purple wash; cream-white keeps the
    text legible while staying in the warm palette of the rest of the page.
-   The special-improvement checkbox also gets white borders and a white-fill
-   "taken" state so it remains visible against the colour. */
+   The special-improvement diamond also gets a cream outline and a cream-fill
+   "selected" state so it remains visible against the colour wash. (On the
+   wash, the global "white default / theme-colour when selected" reads as a
+   hollow cream diamond that fills solid cream when ticked — the theme colour
+   itself is the background here, so a cream fill is what gives contrast.) */
 .sheet-page--litm .theme__motto,
 .sheet-page--litm .theme__description,
-.sheet-page--litm .theme__special-label,
+.sheet-page--litm .theme__special-subtitle,
+.sheet-page--litm .theme__special-title,
 .sheet-page--litm .theme__special {
   color: #fffaeb;
 }
-.sheet-page--litm .theme__special-check {
+.sheet-page--litm .theme__special-diamond {
   border-color: #fffaeb;
-  background-color: transparent;
-}
-.sheet-page--litm .theme__special-check--filled {
   background-color: #fffaeb;
+}
+/* Default (untaken) diamond, with page + theme-type specificity so the cream
+   fill beats the generic .theme--origin/.theme--adventure/.theme--greatness
+   diamond rules (which would otherwise paint it the theme colour — e.g.
+   green-on-green — and make it vanish against the wash). */
+.sheet-page--litm .theme--origin    .theme__special-diamond,
+.sheet-page--litm .theme--adventure .theme__special-diamond,
+.sheet-page--litm .theme--greatness .theme__special-diamond {
+  background-color: #fffaeb;
+  border-color: #fffaeb;
+}
+/* Extra specificity (page + theme-type) so this beats the generic
+   .theme--origin/.theme--adventure/.theme--greatness diamond rules. On the
+   LitM wash, the inverted logic reads as: default = solid cream diamond
+   (clearly visible against the colour), and a TAKEN special = hollow (cream
+   outline, transparent centre) so the open diamonds mark what's been taken. */
+.sheet-page--litm .theme--origin    .theme__special-diamond--filled,
+.sheet-page--litm .theme--adventure .theme__special-diamond--filled,
+.sheet-page--litm .theme--greatness .theme__special-diamond--filled {
+  background-color: transparent;
   border-color: #fffaeb;
 }
 
@@ -789,50 +808,79 @@ body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
 
 .theme__section { margin: 0.07in 0 0; }
 .theme__section-label,
-.theme__special-label {
+/* "SPECIAL IMPROVEMENT" is now a single subtitle heading the whole block,
+   centered small-caps with a short rule on each side (matching the printed
+   sheets). It heads the section rather than prefixing each row. */
+.theme__special-subtitle {
   font-family: var(--font-display);
   font-size: 7pt;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  display: block;
-  margin: 0 0.1in 0.03in;
+  text-align: center;
+  margin: 0.1in 0.1in 0.05in;
+  display: flex;
+  align-items: center;
+  gap: 0.06in;
+  white-space: nowrap;
+}
+.theme__special-subtitle::before,
+.theme__special-subtitle::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
 }
 
-/* Optional-improvement checkbox indicator. Visually mirrors the .pip
-   rule below (solid-white interior, soft border when unchecked; filled
-   with the theme/accent colour when checked) so the special-checks read
-   as the same family of "tick me if this applies" markers as the
-   UPGRADE / DECAY / ABANDON / IMPROVE / MILESTONE pip tracks. Sits
-   inside .theme__special-label so the box appears on the same line as
-   the "SPECIAL IMPROVEMENT —" / "THEME SPECIAL —" caption text, with
-   the improvement description wrapping below.
+/* The bold lead-in title of an individual improvement (e.g. "Practice Makes
+   Perfect:"), rendered inline with its description. Manuskript Antiqua (the
+   default body face) ships regular + italic only, so font-weight:700 against
+   it would not resolve to a real bold. Labrada DOES ship a bold face, so the
+   title explicitly leads with Labrada to get genuine weight contrast against
+   the regular-weight description — matching the printed sheets. */
+.theme__special-title {
+  font-family: "Labrada", var(--font-body);
+  font-weight: 700;
+}
 
-   The base rule here is the LitM treatment: round-cornered pip aesthetic
-   matched with a slightly soft border. Otherscape overrides border-color
-   in sheet-otherscape.css for a darker outline on the dark page, and
-   adds per-theme-type fills on the --filled variant (so a Self theme's
-   ticked check fills magenta, Noise cyan, Mythos purple — same hue path
-   as the .pip--filled rules). */
-.theme__special-check {
+/* Per-improvement marker. NOTE the state logic is intentionally inverted from
+   a typical checkbox: the DEFAULT (unselected) diamond is FILLED, and the
+   --filled class (an improvement the character has actually taken) renders
+   HOLLOW. This supports the pen-and-paper workflow: a freshly printed sheet
+   shows solid diamonds, and as the player takes a special they leave its
+   diamond open/empty — i.e. the open diamonds mark the taken ones, and any
+   still-solid diamond is space that can be filled/marked when taken.
+   This is the LitM treatment (diamond shape via rotate, inverted fill).
+   Otherscape overrides BOTH the shape (square, no rotate) and the state logic
+   (standard white-when-unselected / accent-when-selected) in
+   sheet-otherscape.css, since its dark page needs the opposite legibility. */
+.theme__special-diamond {
   display: inline-block;
-  width: 10px;
-  height: 10px;
-  background: #ffffff;
-  border: 1px solid var(--ink-soft);
+  width: 9px;
+  height: 9px;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  transform: rotate(45deg);
   vertical-align: middle;
-  margin-right: 0.05in;
-  margin-bottom: 0.012in;
+  margin-right: 0.06in;
+  margin-bottom: 0.02in;
   box-sizing: border-box;
 }
-.theme__special-check--filled {
-  background: var(--ink);
+.theme__special-diamond--filled {
+  background: transparent;
   border-color: var(--ink);
 }
-/* Portrait: scale the box down to match the portrait .pip size (10px → 8px). */
-body.orientation--portrait .theme__special-check {
-  width: 8px;
-  height: 8px;
+.theme--origin    .theme__special-diamond { background: var(--origin);    border-color: var(--origin); }
+.theme--adventure .theme__special-diamond { background: var(--adventure); border-color: var(--adventure); }
+.theme--greatness .theme__special-diamond { background: var(--greatness); border-color: var(--greatness); }
+.theme--origin    .theme__special-diamond--filled { background: transparent; border-color: var(--origin); }
+.theme--adventure .theme__special-diamond--filled { background: transparent; border-color: var(--adventure); }
+.theme--greatness .theme__special-diamond--filled { background: transparent; border-color: var(--greatness); }
+/* Portrait: scale the diamond down to match the portrait .pip size. */
+body.orientation--portrait .theme__special-diamond {
+  width: 7px;
+  height: 7px;
 }
 
 /* ---- Tracks (Abandon / Improve / Milestone) ----------------------------- */
@@ -876,16 +924,18 @@ body.orientation--portrait .theme__special-check {
 /* ---- Motto and prose ----------------------------------------------------- */
 
 .theme__motto {
+  font-family: "Labrada", var(--font-body);
   font-style: italic;
+  font-weight: 700;
   margin: 0.08in 0.1in 0;
   color: var(--ink-soft);
-  font-size: 8.5pt;
+  font-size: 9pt;
 }
 .theme__description,
 .theme__special {
-  margin: 0.05in 0.1in 0;
-  font-size: 8pt;
-  line-height: 1.3;
+  margin: 0.04in 0.1in 0;
+  font-size: 6pt;
+  line-height: 1.18;
 }
 
 /* ---- Icons --------------------------------------------------------------- */

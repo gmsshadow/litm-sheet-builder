@@ -368,19 +368,26 @@ body.orientation--portrait.sheet-page--otherscape .theme__motto-label {
 .sheet-page--otherscape .theme--mythos .theme__motto,
 .sheet-page--otherscape .theme--mythos .theme__motto-label { color: var(--mythos); }
 
-/* Optional-improvement checkbox: mirror the Otherscape pip treatment.
-   The base .theme__special-check rule in sheet.css already gives us a
-   solid-white interior; here we (a) swap the soft LitM-ish border for
-   the same darker outline the pips use against this page's dark
-   background, and (b) when checked, switch the fill from the LitM ink
-   colour to the per-theme accent (Self pink, Noise cyan, Mythos purple),
-   matching the per-theme .pip--filled rules above. */
-.sheet-page--otherscape .theme__special-check {
+/* Per-improvement marker — Otherscape differs from LitM in BOTH shape and
+   state logic:
+     - SHAPE: square, not a diamond. The base rule in sheet.css rotates the
+       marker 45deg for LitM's diamond; here we cancel that rotation so it
+       reads as an upright checkbox square.
+     - STATE LOGIC: standard checkbox behaviour (NOT LitM's inverted scheme).
+       Because the Otherscape page is dark, an UNSELECTED box is solid white
+       (clearly visible against the dark card), and a SELECTED box fills with
+       the per-theme accent (Self pink, Noise cyan, Mythos purple), matching
+       the per-theme .pip--filled rules above. This is the opposite of LitM,
+       where the wash makes "filled by default / hollow when taken" the
+       legible choice — hence the separate ruleset. */
+.sheet-page--otherscape .theme__special-diamond {
+  transform: none;
+  background: #ffffff;
   border-color: rgba(0, 0, 0, 0.35);
 }
-.sheet-page--otherscape .theme--self   .theme__special-check--filled { background: var(--self);   border-color: var(--self);   }
-.sheet-page--otherscape .theme--noise  .theme__special-check--filled { background: var(--noise);  border-color: var(--noise);  }
-.sheet-page--otherscape .theme--mythos .theme__special-check--filled { background: var(--mythos); border-color: var(--mythos); }
+.sheet-page--otherscape .theme--self   .theme__special-diamond--filled { background: var(--self);   border-color: var(--self);   }
+.sheet-page--otherscape .theme--noise  .theme__special-diamond--filled { background: var(--noise);  border-color: var(--noise);  }
+.sheet-page--otherscape .theme--mythos .theme__special-diamond--filled { background: var(--mythos); border-color: var(--mythos); }
 
 /* Theme-type icon background images. These mirror the src attribute on the
    <img class="icon icon--..."> element in the template — kept as a fallback
