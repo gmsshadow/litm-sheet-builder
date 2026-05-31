@@ -90,6 +90,30 @@ body.sheet-page {
     var(--paper);
 }
 
+/* LitM page background: the Ruins vista, softened by a heavy parchment-toned
+   scrim so it reads as a subtle atmospheric texture rather than a full photo.
+   The scrim is a near-opaque cream wash (~82%) over the image — enough to keep
+   the dark/busy lower half of the vista from swallowing the brown ink and the
+   translucent card surfaces, while the ruins, sky, and treeline still show
+   through faintly. Scoped to .sheet-page--litm so Otherscape (its own dark
+   Tokyo background) and the plain-parchment fallback are untouched. The cream
+   fallback colour shows if the image fails to load. */
+body.sheet-page--litm {
+  background:
+    linear-gradient(rgba(236, 226, 200, 0.7), rgba(236, 226, 200, 0.7)),
+    url("../images/bg-litm-vista.webp") center/cover no-repeat,
+    var(--paper);
+}
+/* Portrait swaps to the left-biased crop (keeps the castle ruins in frame at
+   the taller aspect ratio; center/cover on the 16:9 original would crop the
+   ruins off). Only the background shorthand needs to change. */
+body.orientation--portrait.sheet-page--litm {
+  background:
+    linear-gradient(rgba(236, 226, 200, 0.7), rgba(236, 226, 200, 0.7)),
+    url("../images/bg-litm-vista-portrait.webp") center/cover no-repeat,
+    var(--paper);
+}
+
 /* ---- Sheet layout -------------------------------------------------------- */
 /* Flexbox throughout — WeasyPrint's CSS Grid support hangs. */
 
