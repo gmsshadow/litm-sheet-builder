@@ -202,37 +202,55 @@ body.orientation--portrait .sheet {
   max-height: 11in;
   overflow: hidden;     /* contain the layout strictly to one page */
 }
+/* Portrait top-row is a VERTICAL stack: the character block (portrait + name
+   + descriptor + quote) spans the full width across the top, and below it the
+   backpack/loadout and crew/fellowship boxes sit SIDE BY SIDE. This makes
+   better use of portrait's narrow-but-tall top area than the old arrangement
+   (character on the left, the two boxes stacked on the right) — the wide
+   character strip gives the quote room to breathe on one or two lines, and the
+   two inventory boxes share the row below at equal-ish width instead of one
+   being squeezed under the other. */
 body.orientation--portrait .top-row {
-  flex: 0 0 2.75in;
+  flex: 0 0 3.6in;
+  flex-direction: column;
+  gap: 0.12in;
 }
 body.orientation--portrait .themes-row {
   flex: 1 1 0;          /* fill remaining height */
 }
 
-/* Character-block: more horizontal room for the portrait + character-info
-   column. The 1.85in fixed-width portrait-frame stays the same width; with
-   top-row trimmed to 2.75in the portrait also shortens vertically (it's
-   height: 100% of character-block), keeping it visually proportionate to
-   the side-stack next to it. */
+/* Character block: full width across the top of the stack. The portrait keeps
+   its fixed width on the left with name/descriptor/quote flowing to its right.
+   Capped height so the portrait strip doesn't eat the space the two boxes
+   below need. */
 body.orientation--portrait .character-block {
-  flex: 2.4 1 0;
+  flex: 0 0 1.7in;
+  width: 100%;
 }
 
-/* Side-stack flips to a vertical column, with inventory taking 60% of the
-   height (taller because it has more rows of content) and fellowship 40%.
-   Children's `height: 100%` from the base rule would conflict with the
-   column flex sizing, so reset it to auto and let flex own the height. */
+/* Side group: now the SECOND row of the column, holding backpack + crew side
+   by side. Revert it to a horizontal flex row (its landscape default) and let
+   it fill the remaining top-row height below the character strip. The two
+   boxes share the width — backpack a little wider since it has more rows.
+
+   The left margin indents this row so its left edge aligns with the RIGHT
+   edge of the portrait above it, rather than running full-width underneath
+   the portrait. The indent = portrait-frame width (1.85in) + the
+   character-block gap (0.18in) = 2.03in, giving the portrait a clean,
+   uninterrupted column down the left side. */
 body.orientation--portrait .top-row__side {
-  flex: 1.6 1 0;
-  flex-direction: column;
+  flex: 1 1 0;
+  flex-direction: row;
   gap: 0.12in;
+  width: auto;
+  margin-left: 2.03in;
 }
 body.orientation--portrait .top-row__side .inventory-block,
 body.orientation--portrait .top-row__side .fellowship-block {
-  height: auto;
+  height: 100%;
   flex-basis: 0;
 }
-body.orientation--portrait .top-row__side .inventory-block  { flex-grow: 1.5; }
+body.orientation--portrait .top-row__side .inventory-block  { flex-grow: 1.1; }
 body.orientation--portrait .top-row__side .fellowship-block { flex-grow: 1.0; }
 
 /* Row tightening for the stacked side panel. The narrower vertical budget
