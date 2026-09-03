@@ -158,10 +158,8 @@ OTHERSCAPE_ESSENCES: list[Essence] = [
         id="nexus",
         title="Nexus",
         special=(
-            "You have touched on the full gamut of experiences which living in this age "
-            "can offer. As such, you adapt to change faster than others. When you next "
-            "replace a theme, if you're still a Nexus after the transformation, it starts "
-            "as a full theme, not a nascent one."
+            "When you next replace a theme, if you're still a Nexus after the transformation, "
+            "it starts as a full theme, not a nascent one."
         ),
         matches=lambda c: _c(c, "self") >= 1 and _c(c, "noise") >= 1 and _c(c, "mythos") >= 1,
     ),
