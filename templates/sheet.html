@@ -110,6 +110,27 @@
         {% if character.quote %}
           <blockquote class="quote">{{ character.quote }}</blockquote>
         {% endif %}
+        {# Essence — Otherscape-only character-level trait. The type acts as a
+           heading; the special rule beneath it reuses the exact markup and
+           classes of a theme's special improvement (check-box marker + label
+           + prose) so the two read identically on the page. Both halves are
+           independently optional: a character can carry an essence type with
+           no special yet, or vice versa. #}
+        {% if game.has_essence and (character.essence_type or character.essence_special) %}
+          <div class="essence">
+            {% if character.essence_type %}
+              <h2 class="essence__type">{{ character.essence_type }}</h2>
+            {% endif %}
+            {% if character.essence_special %}
+              <p class="theme__special essence__special">
+                <span class="theme__special-label">
+                  <span class="theme__special-check{{ ' theme__special-check--filled' if character.essence_special_filled else '' }}"></span>{{ game.essence_special_label }} —
+                </span>
+                {{ character.essence_special }}
+              </p>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
     </section>
 

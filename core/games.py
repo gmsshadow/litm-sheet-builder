@@ -71,6 +71,9 @@ class GameProfile:
     show_theme_tally: bool = False   # show vertical "TYPE:N" tally next to portrait (Otherscape premium-sheet style)
     special_label: str = "Special improvement"  # label for the bonus-rule paragraph on each theme. LitM ships it as "Special improvement"; Otherscape rebrands to "Theme Special".
     show_quest_label: bool = False   # whether to render the per-theme quest_label (e.g. "IDENTITY" / "RITUAL" / "ITCH" for Otherscape) as a small caps title above each theme's motto. LitM doesn't show this — its mottos run unlabelled.
+    has_essence: bool = False        # whether the character block carries an Essence section (Otherscape only). Essence is a character-level trait describing the mix of Self/Noise/Mythos themes, with its own special rule — LitM has no equivalent, so the whole block is gated off there.
+    essence_label: str = "Essence"   # heading shown above the essence type on the sheet.
+    essence_special_label: str = "Essence Special"  # label for the essence's bonus-rule paragraph — mirrors special_label but for the character-level essence rather than a single theme.
 
     # Asset paths
     background: str = ""             # background image filename
@@ -175,6 +178,9 @@ OTHERSCAPE = GameProfile(
     show_theme_tally=True,
     special_label="Theme Special",
     show_quest_label=True,
+    has_essence=True,
+    essence_label="Essence",
+    essence_special_label="Essence Special",
     starting_active_tags=2,
     background="bg-otherscape-tokyo.webp",
     stylesheet="sheet-otherscape.css",

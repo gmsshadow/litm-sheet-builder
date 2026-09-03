@@ -41,6 +41,22 @@
     <label>Name <input type="text" name="name" value="{{ character.name }}"></label>
     <label>Descriptor <input type="text" name="descriptor" value="{{ character.descriptor }}"></label>
     <label>Quote <textarea name="quote" rows="2">{{ character.quote }}</textarea></label>
+    {# Essence — Otherscape only. The type is a free-text box for now (the
+       intended set list can be derived from the character's theme-type mix
+       later); the special is the character-level equivalent of a theme's
+       special improvement, with the same tick-box for marking it used. #}
+    {% if game.has_essence %}
+      <label>{{ game.essence_label }} type
+        <input type="text" name="essence_type" value="{{ character.essence_type }}" placeholder="e.g. Cyborg, Spirit, Nano">
+      </label>
+      <label>{{ game.essence_special_label }}
+        <textarea name="essence_special" rows="3">{{ character.essence_special }}</textarea>
+      </label>
+      <label class="inline-check">
+        <input type="checkbox" name="essence_special_filled" value="1"{% if character.essence_special_filled %} checked{% endif %}>
+        Mark {{ game.essence_special_label|lower }} as taken
+      </label>
+    {% endif %}
     {# Portrait: users pick an image file from their computer instead of
        typing a path. On save the app copies the file into the writable
        portraits/ folder next to the executable. The hidden

@@ -200,6 +200,13 @@ class Character:
     descriptor: str = ""              # short epithet under the name
     quote: str = ""                   # italic flavour quote
     portrait_path: Optional[str] = None
+    # Essence — a character-level trait (Otherscape only) describing the mix
+    # of theme types, with its own special rule. `essence_special_filled`
+    # mirrors Theme.special_improvements_filled: it drives the check-box
+    # marker so a player can tick the rule as used/taken.
+    essence_type: str = ""
+    essence_special: str = ""
+    essence_special_filled: bool = False
     backpack: list[str] = field(default_factory=lambda: [""] * 10)
     # Parallel boolean list — True means the backpack item is "active"
     # (filled diamond marker on LitM, which uses this as a check-box-style
@@ -269,6 +276,9 @@ class Character:
             descriptor=d.get("descriptor", ""),
             quote=d.get("quote", ""),
             portrait_path=d.get("portrait_path"),
+            essence_type=d.get("essence_type", ""),
+            essence_special=d.get("essence_special", ""),
+            essence_special_filled=bool(d.get("essence_special_filled", False)),
             backpack=list(d.get("backpack", [])),  # preserve authored count; template pads up to game.loadout_slots
             backpack_active=_pad_active(d.get("backpack_active", []), len(d.get("backpack", []))),
             fellowship_companions=_fixlen(d.get("fellowship_companions", []), 5),

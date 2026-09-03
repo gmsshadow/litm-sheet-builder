@@ -473,3 +473,42 @@ body.orientation--portrait.sheet-page--otherscape .top-row__side .backpack-list_
 .sheet-page--otherscape .block-heading__label {
   flex: 1 1 auto;
 }
+
+/* ---- Essence -------------------------------------------------------------
+   Character-level trait block sitting under the quote in the left column.
+   The type reads as a small Recbold heading in the same neon green as the
+   character name (a tier down in size, no glow, so it reads as a subheading
+   rather than competing with the name). The special beneath it reuses the
+   .theme__special / .theme__special-label / .theme__special-check classes
+   from the theme cards, so it inherits their layout for free; the rules
+   here only restate the colours, because the theme-card versions of those
+   classes are scoped inside .theme and don't reach the character block. */
+.sheet-page--otherscape .essence {
+  margin-top: 0.12in;
+}
+.sheet-page--otherscape .essence__type {
+  font-family: "Recbold", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  font-size: 13pt;
+  line-height: 1.1;
+  margin: 0 0 0.05in;
+  color: #39FF14;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.sheet-page--otherscape .essence__special {
+  margin: 0;
+  font-size: 8pt;
+  line-height: 1.35;
+  color: #d8d0c2;
+}
+.sheet-page--otherscape .essence__special .theme__special-label {
+  color: #f5f0e6;
+}
+.sheet-page--otherscape .essence__special .theme__special-check {
+  border-color: #f5f0e6;
+  background-color: transparent;
+}
+.sheet-page--otherscape .essence__special .theme__special-check--filled {
+  background-color: #f5f0e6;
+  border-color: #f5f0e6;
+}
