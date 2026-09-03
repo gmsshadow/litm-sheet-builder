@@ -41,9 +41,40 @@
     <label>Name <input type="text" name="name" value="{{ character.name }}"></label>
     <label>Descriptor <input type="text" name="descriptor" value="{{ character.descriptor }}"></label>
     <label>Quote <textarea name="quote" rows="2">{{ character.quote }}</textarea></label>
-    <label>Portrait path (relative to <code>static/</code>)
-      <input type="text" name="portrait_path" value="{{ character.portrait_path or '' }}" placeholder="images/my-portrait.png">
-    </label>
+    {# Portrait: users pick an image file from their computer instead of
+       typing a path. On save the app copies the file into the writable
+       portraits/ folder next to the executable. The hidden
+       portrait_path_existing carries the currently-set portrait through
+       the form so re-saving without touching the file input keeps it;
+       ticking "Remove portrait" clears it, and picking a new file
+       replaces it. #}
+    <div class="portrait-picker">
+      <div class="portrait-picker__label">Portrait</div>
+      <input type="hidden" name="portrait_path_existing" value="{{ character.portrait_path or '' }}">
+      <div class="portrait-picker__row">
+        <div class="portrait-picker__preview" id="portrait-preview-box">
+          {% if character.portrait_path %}
+            {# The template served alongside this editor also computes
+               portrait_url; in the editor context we synthesise the same
+               /portraits/ URL for uploaded files, or fall back to the
+               static/ URL for legacy path-style entries. #}
+            {% if '/' in character.portrait_path or '\\' in character.portrait_path %}
+              <img id="portrait-preview-img" src="/static/{{ character.portrait_path }}" alt="portrait">
+            {% else %}
+              <img id="portrait-preview-img" src="/portraits/{{ character.portrait_path }}" alt="portrait">
+            {% endif %}
+          {% else %}
+            <span id="portrait-preview-empty" class="portrait-picker__empty">no image</span>
+          {% endif %}
+        </div>
+        <div class="portrait-picker__controls">
+          <input type="file" name="portrait_file" id="portrait-file-input" accept="image/png,image/jpeg,image/webp,image/gif">
+          <label class="portrait-picker__clear{% if not character.portrait_path %} portrait-picker__clear--hidden{% endif %}">
+            <input type="checkbox" name="portrait_clear" value="1"> Remove portrait
+          </label>
+        </div>
+      </div>
+    </div>
     {# Page orientation drives both the @page size (inline in sheet.html) and
        the body's orientation--* class. Landscape = 11×8.5in, 1×4 theme row;
        portrait = 8.5×11in with narrower / taller theme cards. Otherscape
@@ -351,6 +382,43 @@
   form.addEventListener("input",  scheduleRefresh);
   form.addEventListener("change", scheduleRefresh);
   refreshPreview();
+
+  // ---- Portrait picker: live thumbnail + clear-checkbox coordination -----
+  // Picking a file shows an instant preview via URL.createObjectURL() —
+  // no round-trip to the server needed. Picking a file also unticks
+  // "Remove portrait" (since the user has just supplied a new one), and
+  // ticking "Remove portrait" clears any picked-but-not-yet-uploaded file
+  // so the two controls can't disagree. The wider form's scheduleRefresh
+  // listener re-renders the iframe as soon as either changes.
+  const portraitFile    = document.getElementById("portrait-file-input");
+  const portraitBox     = document.getElementById("portrait-preview-box");
+  const portraitClearCb = document.querySelector('input[name="portrait_clear"]');
+  const portraitClearLb = document.querySelector(".portrait-picker__clear");
+
+  function setPortraitPreviewImg(src) {
+    if (!portraitBox) return;
+    portraitBox.innerHTML = src
+      ? `<img id="portrait-preview-img" src="${src}" alt="portrait">`
+      : `<span id="portrait-preview-empty" class="portrait-picker__empty">no image</span>`;
+    if (portraitClearLb) portraitClearLb.classList.toggle("portrait-picker__clear--hidden", !src);
+  }
+  if (portraitFile) {
+    portraitFile.addEventListener("change", () => {
+      const f = portraitFile.files && portraitFile.files[0];
+      if (!f) return;
+      // Untick "Remove" so a new pick isn't immediately discarded server-side.
+      if (portraitClearCb) portraitClearCb.checked = false;
+      setPortraitPreviewImg(URL.createObjectURL(f));
+    });
+  }
+  if (portraitClearCb) {
+    portraitClearCb.addEventListener("change", () => {
+      if (portraitClearCb.checked) {
+        if (portraitFile) portraitFile.value = "";  // drop any pending file
+        setPortraitPreviewImg(null);
+      }
+    });
+  }
 </script>
 
 </body>

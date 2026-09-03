@@ -78,8 +78,8 @@
     {# --- LEFT: portrait + character info ------------------------------- #}
     <section class="character-block">
       <div class="portrait-frame">
-        {% if character.portrait_path %}
-          <img class="portrait" src="static/{{ character.portrait_path }}" alt="">
+        {% if portrait_url %}
+          <img class="portrait" src="{{ portrait_url }}" alt="">
         {% else %}
           <div class="portrait portrait--empty">portrait</div>
         {% endif %}
@@ -279,15 +279,6 @@
           {% endfor %}
         </div>
 
-        {# Everything below the tracks sits inside .theme__wash. On LitM this
-           wrapper carries the solid theme-type colour with a short fade-in at
-           its top edge, so the colour transition is anchored to the END OF THE
-           TRACKS rather than a fixed percentage of card height. Tall cards no
-           longer push the motto/description up into the lighter region, and the
-           ABANDON/IMPROVE/MILESTONE pips always stay on clean parchment above
-           the wash. On games without the wash (Otherscape) the wrapper is inert
-           and just groups the same content. #}
-        <div class="theme__wash theme__wash--{{ theme.theme_type }}">
         {% if theme.quest %}
           {# Otherscape opts into a small caps title above each theme's motto:
              "IDENTITY" for Self themes, "RITUAL" for Mythos, "ITCH" for Noise.
@@ -304,35 +295,22 @@
           <p class="theme__description">{{ theme.quest_description }}</p>
         {% endif %}
 
-        {# SPECIAL IMPROVEMENT block. The "SPECIAL IMPROVEMENT" label is now a
-           single section subtitle for the whole block (rules either side,
-           matching the printed sheets), rather than being repeated on every
-           row. Each improvement then renders as: a diamond marker, followed by
-           the improvement's bold title, followed by its description. The marker
-           sits BEFORE the description (not the section label). It is a diamond
-           that is white-filled by default and fills with the theme colour when
-           that improvement is selected.
-
-           Each improvement string is stored as "Title: description"; we split
-           on the first colon so the title can be bolded inline with the
-           description flowing after it. Strings with no colon render whole as
-           the description with no bold title. #}
-        {% set has_special = [] %}
+        {# Iterate by index so we can pair each non-empty improvement text with
+           its matching filled-state boolean. The earlier
+           `for imp in theme.special_improvements if imp` form dropped the
+           index, which would have decoupled the text from the checkbox.
+           The check sits inside the label span so both share the same line
+           (the label is display:block, so putting the check before it as a
+           sibling would force a line break between them). The improvement
+           description text flows on the next line naturally. #}
         {% for k in range(theme.special_improvements|length) if theme.special_improvements[k] %}
-          {% if has_special.append(1) %}{% endif %}
+          <p class="theme__special">
+            <span class="theme__special-label">
+              <span class="theme__special-check{{ ' theme__special-check--filled' if theme.special_improvements_filled[k] else '' }}"></span>{{ game.special_label }} —
+            </span>
+            {{ theme.special_improvements[k] }}
+          </p>
         {% endfor %}
-        {% if has_special %}
-          <p class="theme__special-subtitle">{{ game.special_label }}</p>
-          {% for k in range(theme.special_improvements|length) if theme.special_improvements[k] %}
-            {% set parts = theme.special_improvements[k].split(':', 1) %}
-            {%- if parts|length == 2 %}
-            <p class="theme__special"><span class="theme__special-diamond{{ ' theme__special-diamond--filled' if theme.special_improvements_filled[k] else '' }}"></span> <span class="theme__special-title">{{ parts[0]|trim }}:</span> {{ parts[1]|trim }}</p>
-            {%- else %}
-            <p class="theme__special"><span class="theme__special-diamond{{ ' theme__special-diamond--filled' if theme.special_improvements_filled[k] else '' }}"></span> {{ theme.special_improvements[k]|trim }}</p>
-            {%- endif %}
-          {% endfor %}
-        {% endif %}
-        </div>
       </article>
     {% endfor %}
   </div>

@@ -70,6 +70,17 @@ def characters_dir() -> Path:
     return target
 
 
+def portraits_dir() -> Path:
+    """Writable directory for user-uploaded portrait images. Sits alongside
+    the characters/ library so that saved characters and their portraits
+    live in the same visible place on disk — a user opening the app's
+    folder sees both. Auto-created on first access; never seeded (users
+    supply their own portraits via the editor's file picker)."""
+    target = data_root() / "portraits"
+    target.mkdir(parents=True, exist_ok=True)
+    return target
+
+
 def _seed_characters(target: Path) -> None:
     """Copy bundled sample characters into a freshly-created data dir.
 

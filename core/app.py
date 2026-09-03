@@ -18,16 +18,23 @@ import io
 import re
 from pathlib import Path
 
-from flask import Flask, render_template, request, send_file, jsonify, abort
+from flask import Flask, render_template, request, send_file, send_from_directory, jsonify, abort
 
 from .games import GAMES, get_game, DEFAULT_GAME_ID
 from .models import Character, Theme
 from .render import render_sheet_html, render_sheet_pdf
-from .paths import templates_dir, static_dir, characters_dir
+from .paths import templates_dir, static_dir, characters_dir, portraits_dir
 
 # Writable characters library — resolves next to the executable when frozen,
 # or the project root from source. Created/seeded on first access.
 CHARACTERS_DIR = characters_dir()
+PORTRAITS_DIR = portraits_dir()
+
+# Cap on uploaded portrait size (bytes). 6 MiB comfortably fits typical
+# character-art JPEGs/PNGs while blocking accidental huge uploads that
+# would balloon the writable data dir.
+MAX_PORTRAIT_BYTES = 6 * 1024 * 1024
+_ALLOWED_PORTRAIT_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 
 
 def create_app() -> Flask:
@@ -86,12 +93,12 @@ def create_app() -> Flask:
 
     @app.route("/preview", methods=["POST"])
     def preview():
-        character = _character_from_form(request.form)
+        character = _character_from_form(request.form, request.files)
         return render_sheet_html(character, embed_css=False)
 
     @app.route("/pdf", methods=["POST"])
     def pdf():
-        character = _character_from_form(request.form)
+        character = _character_from_form(request.form, request.files)
         slug = _slug(character.name) or "character"
         buf = io.BytesIO()
         try:
@@ -117,7 +124,7 @@ def create_app() -> Flask:
 
     @app.route("/save", methods=["POST"])
     def save():
-        character = _character_from_form(request.form)
+        character = _character_from_form(request.form, request.files)
         slug = _slug(character.name)
         if not slug:
             abort(400, "Character needs a name before saving.")
@@ -139,6 +146,16 @@ def create_app() -> Flask:
         files = sorted(p.stem for p in game_dir.glob("*.json"))
         return jsonify(files)
 
+    @app.route("/portraits/<path:filename>")
+    def portrait_file(filename: str):
+        """Serve a user-uploaded portrait from the writable portraits/ dir.
+
+        Kept out of Flask's static handler because portraits live next to the
+        executable at runtime (writable data root), not inside the read-only
+        static/ bundle. send_from_directory is safe against path traversal —
+        any '..' segments resolving outside PORTRAITS_DIR return a 404."""
+        return send_from_directory(str(PORTRAITS_DIR), filename)
+
     return app
 
 
@@ -155,8 +172,16 @@ def _character_path(game_id: str, slug: str) -> Path:
     return CHARACTERS_DIR / game_id / f"{_slug(slug)}.json"
 
 
-def _character_from_form(form) -> Character:
-    """Reconstruct a Character from the flat editor form."""
+def _character_from_form(form, files=None) -> Character:
+    """Reconstruct a Character from the flat editor form.
+
+    ``files`` is Flask's ``request.files`` (or None). When present, a
+    ``portrait_file`` upload is written into the writable portraits/ dir,
+    named by slugifying the character name so the same character overwrites
+    its previous portrait rather than accumulating orphaned files. A ticked
+    ``portrait_clear`` checkbox drops the portrait entirely. If no upload
+    and no clear, the existing portrait (from ``portrait_path_existing``)
+    is preserved so re-saving without touching the file input doesn't wipe it."""
     game_id = form.get("game") or DEFAULT_GAME_ID
     game = get_game(game_id)
 
@@ -218,11 +243,40 @@ def _character_from_form(form) -> Character:
     if orientation not in ("landscape", "portrait"):
         orientation = "landscape"
 
+    # Portrait handling — three modes, checked in this order:
+    #   1. "Remove portrait" checkbox ticked → drop the portrait entirely.
+    #   2. A file was uploaded → save it to portraits_dir/<slug>.<ext> and
+    #      use that filename; overwrites the previous portrait for the same
+    #      character (slug), which is what users expect after replacing.
+    #   3. Neither → keep whatever was already set (portrait_path_existing),
+    #      so re-saving the character without touching the file input
+    #      doesn't wipe the portrait.
+    portrait_path = (form.get("portrait_path_existing") or "").strip() or None
+    if form.get("portrait_clear"):
+        portrait_path = None
+    elif files is not None:
+        uploaded = files.get("portrait_file")
+        if uploaded and getattr(uploaded, "filename", ""):
+            ext = Path(uploaded.filename).suffix.lower()
+            if ext not in _ALLOWED_PORTRAIT_EXTS:
+                abort(400, f"Portrait must be one of: {', '.join(sorted(_ALLOWED_PORTRAIT_EXTS))}")
+            # Size guard: stream through a small check first.
+            uploaded.stream.seek(0, io.SEEK_END)
+            size = uploaded.stream.tell()
+            uploaded.stream.seek(0)
+            if size > MAX_PORTRAIT_BYTES:
+                abort(400, f"Portrait too large ({size} bytes; max {MAX_PORTRAIT_BYTES}).")
+            # Slug the character name so re-uploads overwrite in place.
+            portrait_slug = _slug(form.get("name", "")) or "portrait"
+            portrait_path = f"{portrait_slug}{ext}"
+            PORTRAITS_DIR.mkdir(parents=True, exist_ok=True)
+            uploaded.save(str(PORTRAITS_DIR / portrait_path))
+
     return Character(
         name=form.get("name", ""),
         descriptor=form.get("descriptor", ""),
         quote=form.get("quote", ""),
-        portrait_path=form.get("portrait_path") or None,
+        portrait_path=portrait_path,
         backpack=[form.get(f"backpack_{k}", "") for k in range(game.loadout_slots)],
         backpack_active=(
             [bool(form.get(f"backpack_active_{k}")) for k in range(game.loadout_slots)]
