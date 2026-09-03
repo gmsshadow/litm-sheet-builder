@@ -274,3 +274,22 @@ input:focus, textarea:focus, select:focus {
 .portrait-picker__clear--hidden {
   visibility: hidden;
 }
+
+/* Custom-essence override block — collapsed by default (and auto-opened when
+   a custom essence is already set) so the common case, letting the essence
+   calculate itself, stays visually simple. */
+.essence-custom {
+  margin: 6px 0;
+  padding: 6px 8px;
+  border: 1px solid #d8c9a8;
+  border-radius: 3px;
+  background: #f6ecd6;
+}
+.essence-custom > summary {
+  cursor: pointer;
+  font-size: 0.85em;
+  color: #7a5a2a;
+}
+.essence-custom > label {
+  margin-top: 6px;
+}

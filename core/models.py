@@ -200,12 +200,16 @@ class Character:
     descriptor: str = ""              # short epithet under the name
     quote: str = ""                   # italic flavour quote
     portrait_path: Optional[str] = None
-    # Essence — a character-level trait (Otherscape only) describing the mix
-    # of theme types, with its own special rule. `essence_special_filled`
-    # mirrors Theme.special_improvements_filled: it drives the check-box
-    # marker so a player can tick the rule as used/taken.
-    essence_type: str = ""
-    essence_special: str = ""
+    # Essence (Otherscape only) — resolved through three tiers, highest first:
+    #   1. Custom free text (essence_type_custom / essence_special_custom):
+    #      an MC-invented essence that overrides everything below.
+    #   2. essence_choice: the id of a set essence picked from the dropdown,
+    #      overriding the automatic calculation.
+    #   3. Automatic: derived from the character's mix of theme types.
+    # `essence_special_filled` drives the tick-box marker in all three cases.
+    essence_choice: str = ""            # "" = automatic; otherwise an Essence.id
+    essence_type_custom: str = ""       # free-text title; non-empty wins over 1 & 2
+    essence_special_custom: str = ""    # free-text special rule, used with the custom title
     essence_special_filled: bool = False
     backpack: list[str] = field(default_factory=lambda: [""] * 10)
     # Parallel boolean list — True means the backpack item is "active"
@@ -222,6 +226,55 @@ class Character:
     orientation: str = "landscape"    # "landscape" (default) or "portrait" — the latter gives 2×2 theme cards with more vertical room
 
     # ---- (de)serialisation ------------------------------------------------
+
+    def resolved_essence_auto(self, game):
+        """The essence the automatic calculation alone would pick, ignoring
+        any dropdown choice or custom override. Used by the editor to label
+        the "Automatic" option so the user can see what it resolves to."""
+        if not getattr(game, "has_essence", False):
+            return None
+        from .games import calculate_essence
+        return calculate_essence(game, [t.theme_type for t in self.themes])
+
+    def resolved_essence(self, game) -> dict | None:
+        """Resolve this character's essence for display.
+
+        Applies the three-tier precedence documented on the essence fields:
+        a custom free-text title wins outright; failing that an explicitly
+        chosen set essence; failing that the automatic calculation from the
+        character's theme-type mix.
+
+        Returns a dict with `title`, `special`, and `source` (one of
+        "custom" / "chosen" / "auto") so the template can render without
+        re-deriving anything, or None when the game has no essence system or
+        nothing resolves (e.g. an empty sheet, or a theme spread the
+        published essence list doesn't cover).
+        """
+        if not getattr(game, "has_essence", False):
+            return None
+
+        # Tier 1 — custom free text overrides everything.
+        custom_title = (self.essence_type_custom or "").strip()
+        if custom_title:
+            return {
+                "title": custom_title,
+                "special": (self.essence_special_custom or "").strip(),
+                "source": "custom",
+            }
+
+        from .games import calculate_essence, get_essence
+
+        # Tier 2 — explicit dropdown choice.
+        if self.essence_choice:
+            chosen = get_essence(game, self.essence_choice)
+            if chosen:
+                return {"title": chosen.title, "special": chosen.special, "source": "chosen"}
+
+        # Tier 3 — automatic, from the mix of theme types.
+        auto = calculate_essence(game, [t.theme_type for t in self.themes])
+        if auto:
+            return {"title": auto.title, "special": auto.special, "source": "auto"}
+        return None
 
     @classmethod
     def from_dict(cls, d: dict) -> "Character":
@@ -276,8 +329,13 @@ class Character:
             descriptor=d.get("descriptor", ""),
             quote=d.get("quote", ""),
             portrait_path=d.get("portrait_path"),
-            essence_type=d.get("essence_type", ""),
-            essence_special=d.get("essence_special", ""),
+            # Older JSONs stored a flat essence_type / essence_special pair
+            # with no notion of automatic calculation. Treat those as a
+            # custom (free-text) essence so nothing a user typed is lost;
+            # new files use essence_choice + the *_custom fields.
+            essence_choice=d.get("essence_choice", ""),
+            essence_type_custom=d.get("essence_type_custom", d.get("essence_type", "")),
+            essence_special_custom=d.get("essence_special_custom", d.get("essence_special", "")),
             essence_special_filled=bool(d.get("essence_special_filled", False)),
             backpack=list(d.get("backpack", [])),  # preserve authored count; template pads up to game.loadout_slots
             backpack_active=_pad_active(d.get("backpack_active", []), len(d.get("backpack", []))),

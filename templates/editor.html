@@ -41,17 +41,35 @@
     <label>Name <input type="text" name="name" value="{{ character.name }}"></label>
     <label>Descriptor <input type="text" name="descriptor" value="{{ character.descriptor }}"></label>
     <label>Quote <textarea name="quote" rows="2">{{ character.quote }}</textarea></label>
-    {# Essence — Otherscape only. The type is a free-text box for now (the
-       intended set list can be derived from the character's theme-type mix
-       later); the special is the character-level equivalent of a theme's
-       special improvement, with the same tick-box for marking it used. #}
+    {# Essence — Otherscape only. Three tiers, in precedence order:
+       (1) the custom free-text title/special below overrides everything;
+       (2) otherwise the dropdown picks a set essence explicitly;
+       (3) otherwise "Automatic" derives it from the theme-type mix.
+       The Automatic option's label is refreshed by JS as theme types change
+       so you can always see what it would resolve to. #}
     {% if game.has_essence %}
-      <label>{{ game.essence_label }} type
-        <input type="text" name="essence_type" value="{{ character.essence_type }}" placeholder="e.g. Cyborg, Spirit, Nano">
+      {% set auto_essence = character.resolved_essence_auto(game) %}
+      <label>{{ game.essence_label }}
+        <select name="essence_choice" id="essence-choice">
+          <option value="" {% if not character.essence_choice %}selected{% endif %}
+                  id="essence-auto-option"
+                  data-auto-prefix="Automatic">
+            Automatic{% if auto_essence %} — {{ auto_essence.title }}{% endif %}
+          </option>
+          {% for e in game.essences %}
+            <option value="{{ e.id }}" {% if character.essence_choice == e.id %}selected{% endif %}>{{ e.title }}</option>
+          {% endfor %}
+        </select>
       </label>
-      <label>{{ game.essence_special_label }}
-        <textarea name="essence_special" rows="3">{{ character.essence_special }}</textarea>
-      </label>
+      <details class="essence-custom" {% if character.essence_type_custom %}open{% endif %}>
+        <summary>Custom {{ game.essence_label|lower }} (overrides the above)</summary>
+        <label>Title
+          <input type="text" name="essence_type_custom" value="{{ character.essence_type_custom }}" placeholder="leave blank to use the selection above">
+        </label>
+        <label>{{ game.essence_special_label }}
+          <textarea name="essence_special_custom" rows="3">{{ character.essence_special_custom }}</textarea>
+        </label>
+      </details>
       <label class="inline-check">
         <input type="checkbox" name="essence_special_filled" value="1"{% if character.essence_special_filled %} checked{% endif %}>
         Mark {{ game.essence_special_label|lower }} as taken
@@ -435,6 +453,36 @@
       }
     });
   }
+  // ---- Essence: keep the "Automatic" option label in sync ---------------
+  // The automatic essence depends on how many Self / Noise / Mythos themes
+  // the character has, so recompute the label whenever a theme-type select
+  // changes. The rules are mirrored from core/games.py; the server remains
+  // the source of truth (this is only the dropdown's preview label), but
+  // keeping them in step means the editor never shows a stale archetype.
+  const essenceAutoOption = document.getElementById("essence-auto-option");
+  function essenceFromCounts(c) {
+    const s = c.self || 0, n = c.noise || 0, m = c.mythos || 0;
+    if (s >= 1 && n >= 1 && m >= 1) return "Nexus";
+    if (s >= 1 && m >= 1 && n === 0) return "Spiritualist";
+    if (s >= 1 && n >= 1 && m === 0) return "Cyborg";
+    if (m >= 1 && n >= 1 && s === 0) return "Transhuman";
+    if (s >= 1 && n === 0 && m === 0) return "Real";
+    if (m >= 1 && s === 0 && n === 0) return "Conduit";  // Avatar is manual-only
+    return null;
+  }
+  function refreshEssenceAutoLabel() {
+    if (!essenceAutoOption) return;
+    const counts = {};
+    form.querySelectorAll('select[name$="_theme_type"]').forEach(sel => {
+      if (sel.value) counts[sel.value] = (counts[sel.value] || 0) + 1;
+    });
+    const title = essenceFromCounts(counts);
+    essenceAutoOption.textContent = title ? `Automatic — ${title}` : "Automatic";
+  }
+  form.addEventListener("change", (ev) => {
+    if (ev.target.name && ev.target.name.endsWith("_theme_type")) refreshEssenceAutoLabel();
+  });
+  refreshEssenceAutoLabel();
 </script>
 
 </body>

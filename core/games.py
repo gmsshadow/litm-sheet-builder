@@ -13,6 +13,7 @@ below and register it in `GAMES`.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Callable
 
 
 # ---------------------------------------------------------------------------
@@ -38,6 +39,30 @@ class Track:
     """A 0–3 pip track on each theme (Abandon, Improve, etc.)."""
     id: str          # internal identifier ("abandon", "improve", "milestone", "decay", "upgrade")
     label: str       # display label ("Abandon", "Decay")
+
+
+@dataclass(frozen=True)
+class Essence:
+    """A character-level essence: the archetype implied by which theme types
+    a character carries, together with its special rule.
+
+    Otherscape derives a character's essence from the *mix* of Self / Noise /
+    Mythos themes they hold — e.g. holding at least one of each makes you a
+    Nexus. `matches()` encodes that rule as a predicate over the per-type
+    counts so `calculate_essence()` can pick the right one without a pile of
+    branching logic at the call site.
+    """
+    id: str                  # internal identifier stored in JSON ("nexus", "cyborg", ...)
+    title: str               # display title, rendered in caps on the sheet ("NEXUS")
+    special: str             # the essence's special rule text
+    # Predicate over a {theme_type_id: count} mapping. Returns True when this
+    # essence applies to that spread of themes.
+    matches: Callable[[dict[str, int]], bool] = field(default=lambda counts: False, compare=False)
+    # When two essences match the same counts (Conduit vs Avatar, which are
+    # distinguished by Source rather than by theme count), the one with the
+    # lower sort_priority wins the automatic calculation; the other stays
+    # selectable from the dropdown.
+    sort_priority: int = 0
 
 
 @dataclass(frozen=True)
@@ -72,6 +97,7 @@ class GameProfile:
     special_label: str = "Special improvement"  # label for the bonus-rule paragraph on each theme. LitM ships it as "Special improvement"; Otherscape rebrands to "Theme Special".
     show_quest_label: bool = False   # whether to render the per-theme quest_label (e.g. "IDENTITY" / "RITUAL" / "ITCH" for Otherscape) as a small caps title above each theme's motto. LitM doesn't show this — its mottos run unlabelled.
     has_essence: bool = False        # whether the character block carries an Essence section (Otherscape only). Essence is a character-level trait describing the mix of Self/Noise/Mythos themes, with its own special rule — LitM has no equivalent, so the whole block is gated off there.
+    essences: list["Essence"] = field(default_factory=list)  # catalogue of the game's set essences, used both for the automatic calculation and to populate the editor's dropdown. Empty means no automatic system (the essence fields, if shown at all, are then free-text only).
     essence_label: str = "Essence"   # heading shown above the essence type on the sheet.
     essence_special_label: str = "Essence Special"  # label for the essence's bonus-rule paragraph — mirrors special_label but for the character-level essence rather than a single theme.
 
@@ -111,6 +137,136 @@ class GameProfile:
 # ---------------------------------------------------------------------------
 # Legend in the Mist
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Otherscape essences
+# ---------------------------------------------------------------------------
+# A character's essence follows from which theme types they hold. The rules
+# below read the per-type counts (how many Self / Noise / Mythos themes) and
+# pick the matching archetype. Conduit and Avatar share the same count
+# signature (Mythos only) and are told apart by whether the Mythos themes
+# draw on the same Source - something the sheet can't infer, so Conduit wins
+# the automatic pick and Avatar remains selectable from the dropdown.
+
+def _c(counts: dict[str, int], key: str) -> int:
+    """Count of themes of one type, defaulting to 0."""
+    return counts.get(key, 0)
+
+
+OTHERSCAPE_ESSENCES: list[Essence] = [
+    Essence(
+        id="nexus",
+        title="Nexus",
+        special=(
+            "You have touched on the full gamut of experiences which living in this age "
+            "can offer. As such, you adapt to change faster than others. When you next "
+            "replace a theme, if you're still a Nexus after the transformation, it starts "
+            "as a full theme, not a nascent one."
+        ),
+        matches=lambda c: _c(c, "self") >= 1 and _c(c, "noise") >= 1 and _c(c, "mythos") >= 1,
+    ),
+    Essence(
+        id="spiritualist",
+        title="Spiritualist",
+        special=(
+            "Once per session, you can tap this bond to add your Mythos to the Power of an "
+            "action that is primarily powered by Self themes, or add your Self to an action "
+            "that is primarily powered by Mythos themes, or, if you are already rolling with "
+            "Mythos or with Self, roll with both."
+        ),
+        matches=lambda c: _c(c, "self") >= 1 and _c(c, "mythos") >= 1 and _c(c, "noise") == 0,
+    ),
+    Essence(
+        id="cyborg",
+        title="Cyborg",
+        special=(
+            "You can add your number of Self or Noise to the Power of any action to resist or "
+            "shake off mythical forces that are not manifested as tangible or measurable "
+            "effects, such as curses, hallucinations, or mental influences. You may do this "
+            "once per session with your Self and once per session with your Noise, or you may "
+            "use both in the same action."
+        ),
+        matches=lambda c: _c(c, "self") >= 1 and _c(c, "noise") >= 1 and _c(c, "mythos") == 0,
+    ),
+    Essence(
+        id="transhuman",
+        title="Transhuman",
+        special=(
+            "Once per scene, when you invoke both mythical and technological tags in the same "
+            "action, no matter their source, you can trade a miss (6 or less) outcome with a "
+            "mixed hit (7-9)."
+        ),
+        matches=lambda c: _c(c, "mythos") >= 1 and _c(c, "noise") >= 1 and _c(c, "self") == 0,
+    ),
+    Essence(
+        id="real",
+        title="Real",
+        special=(
+            "Whenever you take action to directly uphold or protect one of your Identities, "
+            "you may roll with Self instead of counting positive tags."
+        ),
+        matches=lambda c: _c(c, "self") >= 1 and _c(c, "noise") == 0 and _c(c, "mythos") == 0,
+    ),
+    # Conduit and Avatar share the "Mythos only" signature. Conduit is the
+    # default automatic pick (sort_priority 0); Avatar (priority 1) is chosen
+    # manually when the character's Mythos themes all stem from one Source.
+    Essence(
+        id="conduit",
+        title="Conduit",
+        special=(
+            "You may replace themes at will as long as you replace them with a Mythos theme. "
+            "Any Source in your possession or even nearby can become your new Mythos theme and "
+            "it begins as a full theme, not a nascent one."
+        ),
+        matches=lambda c: _c(c, "mythos") >= 1 and _c(c, "self") == 0 and _c(c, "noise") == 0,
+        sort_priority=0,
+    ),
+    Essence(
+        id="avatar",
+        title="Avatar",
+        special="While you are an Avatar, you may instantly recover burned power tags.",
+        matches=lambda c: _c(c, "mythos") >= 1 and _c(c, "self") == 0 and _c(c, "noise") == 0,
+        sort_priority=1,
+    ),
+]
+
+
+def calculate_essence(game: "GameProfile", theme_type_ids):
+    """Pick the essence implied by a character's theme types.
+
+    `theme_type_ids` is any iterable of theme-type id strings (typically
+    `[t.theme_type for t in character.themes]`). Blank ids are ignored so a
+    half-filled sheet doesn't skew the result.
+
+    Returns None when the game has no essence system, when the character has
+    no themes yet, or when the spread matches no rule (e.g. a Noise-only
+    character, which the published essence list doesn't cover) - the caller
+    then renders nothing rather than inventing an archetype.
+    """
+    if not game.essences:
+        return None
+    counts: dict[str, int] = {}
+    for tid in theme_type_ids:
+        if tid:
+            counts[tid] = counts.get(tid, 0) + 1
+    if not counts:
+        return None
+    matching = [e for e in game.essences if e.matches(counts)]
+    if not matching:
+        return None
+    # Lowest sort_priority wins ties (Conduit over Avatar).
+    return sorted(matching, key=lambda e: e.sort_priority)[0]
+
+
+def get_essence(game: "GameProfile", essence_id: str):
+    """Look up one essence by id, or None if not found / not applicable."""
+    if not essence_id or not game.essences:
+        return None
+    for e in game.essences:
+        if e.id == essence_id:
+            return e
+    return None
+
 
 LITM = GameProfile(
     id="litm",
@@ -179,6 +335,7 @@ OTHERSCAPE = GameProfile(
     special_label="Theme Special",
     show_quest_label=True,
     has_essence=True,
+    essences=OTHERSCAPE_ESSENCES,
     essence_label="Essence",
     essence_special_label="Essence Special",
     starting_active_tags=2,
