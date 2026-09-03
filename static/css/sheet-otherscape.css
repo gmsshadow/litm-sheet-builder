@@ -488,7 +488,7 @@ body.orientation--portrait.sheet-page--otherscape .top-row__side .backpack-list_
 }
 .sheet-page--otherscape .essence__type {
   font-family: "Recbold", "Roboto", "Helvetica Neue", Arial, sans-serif;
-  font-size: 13pt;
+  font-size: 11.5pt;
   line-height: 1.1;
   margin: 0 0 0.05in;
   color: #39FF14;
@@ -500,15 +500,4 @@ body.orientation--portrait.sheet-page--otherscape .top-row__side .backpack-list_
   font-size: 8pt;
   line-height: 1.35;
   color: #d8d0c2;
-}
-.sheet-page--otherscape .essence__special .theme__special-label {
-  color: #f5f0e6;
-}
-.sheet-page--otherscape .essence__special .theme__special-check {
-  border-color: #f5f0e6;
-  background-color: transparent;
-}
-.sheet-page--otherscape .essence__special .theme__special-check--filled {
-  background-color: #f5f0e6;
-  border-color: #f5f0e6;
 }

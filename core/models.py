@@ -206,11 +206,9 @@ class Character:
     #   2. essence_choice: the id of a set essence picked from the dropdown,
     #      overriding the automatic calculation.
     #   3. Automatic: derived from the character's mix of theme types.
-    # `essence_special_filled` drives the tick-box marker in all three cases.
     essence_choice: str = ""            # "" = automatic; otherwise an Essence.id
     essence_type_custom: str = ""       # free-text title; non-empty wins over 1 & 2
     essence_special_custom: str = ""    # free-text special rule, used with the custom title
-    essence_special_filled: bool = False
     backpack: list[str] = field(default_factory=lambda: [""] * 10)
     # Parallel boolean list — True means the backpack item is "active"
     # (filled diamond marker on LitM, which uses this as a check-box-style
@@ -336,7 +334,6 @@ class Character:
             essence_choice=d.get("essence_choice", ""),
             essence_type_custom=d.get("essence_type_custom", d.get("essence_type", "")),
             essence_special_custom=d.get("essence_special_custom", d.get("essence_special", "")),
-            essence_special_filled=bool(d.get("essence_special_filled", False)),
             backpack=list(d.get("backpack", [])),  # preserve authored count; template pads up to game.loadout_slots
             backpack_active=_pad_active(d.get("backpack_active", []), len(d.get("backpack", []))),
             fellowship_companions=_fixlen(d.get("fellowship_companions", []), 5),

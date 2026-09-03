@@ -113,20 +113,16 @@
         {# Essence — Otherscape-only character-level trait. The title and
            special come from Character.resolved_essence(), which applies the
            precedence: custom free text > dropdown choice > automatic
-           calculation from the theme-type mix. The special reuses the exact
-           markup and classes of a theme's special improvement so the two
-           read identically on the page. #}
+           calculation from the theme-type mix. Unlike a theme's special
+           improvement this has no check-box/label line: essence specials are
+           mostly always-on abilities rather than one-shot rules to tick off,
+           so the label was pure overhead on an already tight column. #}
         {% set essence = character.resolved_essence(game) %}
         {% if essence %}
           <div class="essence">
-            <h2 class="essence__type">{{ essence.title }}</h2>
+            <h2 class="essence__type">{{ game.essence_label }}: {{ essence.title }}</h2>
             {% if essence.special %}
-              <p class="theme__special essence__special">
-                <span class="theme__special-label">
-                  <span class="theme__special-check{{ ' theme__special-check--filled' if character.essence_special_filled else '' }}"></span>{{ game.essence_special_label }} —
-                </span>
-                {{ essence.special }}
-              </p>
+              <p class="essence__special">{{ essence.special }}</p>
             {% endif %}
           </div>
         {% endif %}

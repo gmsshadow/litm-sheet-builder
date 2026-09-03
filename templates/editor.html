@@ -70,10 +70,6 @@
           <textarea name="essence_special_custom" rows="3">{{ character.essence_special_custom }}</textarea>
         </label>
       </details>
-      <label class="inline-check">
-        <input type="checkbox" name="essence_special_filled" value="1"{% if character.essence_special_filled %} checked{% endif %}>
-        Mark {{ game.essence_special_label|lower }} as taken
-      </label>
     {% endif %}
     {# Portrait: users pick an image file from their computer instead of
        typing a path. On save the app copies the file into the writable

@@ -279,7 +279,6 @@ def _character_from_form(form, files=None) -> Character:
         essence_choice=form.get("essence_choice", "") if game.has_essence else "",
         essence_type_custom=form.get("essence_type_custom", "") if game.has_essence else "",
         essence_special_custom=form.get("essence_special_custom", "") if game.has_essence else "",
-        essence_special_filled=bool(form.get("essence_special_filled")) if game.has_essence else False,
         portrait_path=portrait_path,
         backpack=[form.get(f"backpack_{k}", "") for k in range(game.loadout_slots)],
         backpack_active=(
