@@ -467,6 +467,7 @@
     if (s >= 1 && n >= 1 && m === 0) return "Cyborg";
     if (m >= 1 && n >= 1 && s === 0) return "Transhuman";
     if (s >= 1 && n === 0 && m === 0) return "Real";
+    if (n >= 1 && s === 0 && m === 0) return "Singularity";
     if (m >= 1 && s === 0 && n === 0) return "Conduit";  // Avatar is manual-only
     return null;
   }

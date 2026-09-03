@@ -207,6 +207,15 @@ OTHERSCAPE_ESSENCES: list[Essence] = [
         ),
         matches=lambda c: _c(c, "self") >= 1 and _c(c, "noise") == 0 and _c(c, "mythos") == 0,
     ),
+    Essence(
+        id="singularity",
+        title="Singularity",
+        special=(
+            "You can interface with ALL information, regardless of medium, and may roll with "
+            "Noise to search it and, if it is recorded information, to manipulate it."
+        ),
+        matches=lambda c: _c(c, "noise") >= 1 and _c(c, "self") == 0 and _c(c, "mythos") == 0,
+    ),
     # Conduit and Avatar share the "Mythos only" signature. Conduit is the
     # default automatic pick (sort_priority 0); Avatar (priority 1) is chosen
     # manually when the character's Mythos themes all stem from one Source.
