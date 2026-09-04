@@ -304,6 +304,14 @@
           {% endfor %}
         </div>
 
+        {# Everything from here down sits on the colour wash (LitM). Wrapping it
+           in its own element is what makes the wash dynamic: the block starts
+           exactly where the track row ends on THIS card rather than at a fixed
+           percentage of card height, so the pips always stay on clean
+           parchment and the quest motto always lands on solid colour. It
+           flex-grows to the bottom edge so short cards are filled too.
+           Otherscape leaves the wrapper unstyled, so nothing changes there. #}
+        <div class="theme__wash">
         {% if theme.quest %}
           {# Otherscape opts into a small caps title above each theme's motto:
              "IDENTITY" for Self themes, "RITUAL" for Mythos, "ITCH" for Noise.
@@ -336,6 +344,7 @@
             {{ theme.special_improvements[k] }}
           </p>
         {% endfor %}
+        </div>
       </article>
     {% endfor %}
   </div>

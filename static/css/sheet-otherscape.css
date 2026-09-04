@@ -317,11 +317,6 @@ body.orientation--portrait.sheet-page--otherscape .character-name {
    portrait: portrait is one shade darker) and a neutral dark inset
    shadow. The "portrait" placeholder text gets a lighter grey so it
    reads against the new background. */
-.sheet-page--otherscape .portrait-frame {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
 .sheet-page--otherscape .portrait--empty {
   color: #a8acb2;
 }

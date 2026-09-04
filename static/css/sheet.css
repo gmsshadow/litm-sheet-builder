@@ -256,11 +256,14 @@ body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
 
 /* ---- Character block ----------------------------------------------------- */
 
+/* No frame, tint or inset shadow: a portrait with a transparent background
+   should sit directly on the parchment (or the Tokyo backdrop) and blend,
+   rather than being boxed off in a differently-coloured panel. Both games
+   share this now — Otherscape used to override it back to transparent. */
 .portrait-frame {
   position: relative;
-  background: var(--paper-shade);
-  border: 1px solid var(--rule);
-  box-shadow: inset 0 0 0.2in rgba(80,50,20,0.18);
+  background: transparent;
+  border: none;
   overflow: hidden;
 }
 .portrait {
@@ -490,51 +493,76 @@ body.orientation--portrait .theme__banner .icon { width: 22px; height: 22px; }
 
 /* ---- Theme cards --------------------------------------------------------- */
 
+/* Flex column rather than block flow so .theme__wash (the last child) can
+   grow into whatever height is left below the track row. That growth is the
+   whole mechanism behind the dynamic colour wash described further down.
+   Every other child is pinned at its natural height — without the explicit
+   `flex: 0 0 auto` a tall card would let the flex algorithm shrink the
+   banner image and tag rows to fit. */
 .theme {
-  display: block;
+  display: flex;
+  flex-direction: column;
   background: rgba(255,250,235,0.55);
   border: 1px solid var(--rule);
-  padding: 0 0 0.08in 0;
   overflow: hidden;
   font-size: 8.5pt;
   line-height: 1.25;
 }
-
-/* LitM theme cards — colour wash with an abrupt transition right under the
-   ABANDON/IMPROVE/MILESTONE tracks. The upper portion of every card (banner,
-   tags, weakness, "new power tags", tracks) reads on clean parchment; just
-   below the tracks the background steps almost-cleanly to a fully-opaque
-   theme-type colour that holds for the rest of the card (quest motto,
-   description, special-improvement).
-
-   The four-stop gradient is shaped as a near-step function: transparent up
-   to 65%, a tight 5% transition between 65% and 70%, then solid 1.0-alpha
-   theme colour holding all the way to the bottom. 65% lands just under
-   where the tracks naturally end on a typical card layout, so the pips
-   stay crisp on parchment instead of being half-buried in colour. The
-   tight 5% fade reads as a deliberate edge rather than a soft wash, while
-   still being smooth enough not to look like a printer banding artefact.
-   Scoped to .sheet-page--litm so Otherscape's bar-style cards stay untouched. */
-.sheet-page--litm .theme--origin {
-  background-image: linear-gradient(to bottom,
-    transparent 0%,
-    transparent 45%,
-    rgba(63, 92, 47, 1.0) 49%,
-    rgba(63, 92, 47, 1.0) 100%);
+.theme > * { flex: 0 0 auto; }
+.theme__wash {
+  /* Grow into spare height, but never shrink: on a card whose content already
+     overflows, shrinking would be the only give in the column and would
+     squeeze the prose. `1 0 auto` makes an overflowing card behave exactly as
+     it did under block flow. */
+  flex: 1 0 auto;
+  padding-bottom: 0.08in;        /* was .theme's bottom padding; the wash now
+                                    reaches the card's bottom edge itself */
 }
-.sheet-page--litm .theme--adventure {
-  background-image: linear-gradient(to bottom,
-    transparent 0%,
-    transparent 45%,
-    rgba(122, 31, 31, 1.0) 49%,
-    rgba(122, 31, 31, 1.0) 100%);
+
+/* LitM theme cards — colour wash over the lower half of the card. The upper
+   portion (banner, tags, weakness, "new power tags", tracks) reads on clean
+   parchment; from just under the ABANDON/IMPROVE/MILESTONE tracks down, the
+   background is fully-opaque theme-type colour carrying the quest motto,
+   description and special-improvement text.
+
+   The wash lives on .theme__wash, not on .theme. That matters: a percentage
+   gradient on the card was anchored to the card's own height, so any card
+   with more or fewer tag rows than the others put its transition in the
+   wrong place — either swallowing the quest text in the fade, or dragging
+   the pips onto dark colour where a player can't pencil them in. Hanging
+   the background off the wrapper instead means the transition is always at
+   the exact top of the wrapper, i.e. always immediately below that card's
+   own track row, whatever it happens to contain.
+
+   The fade is expressed in absolute units rather than percentages for the
+   same reason: 0.07in of soft edge reads as a deliberate boundary at any
+   wash height, where a percentage would stretch on a tall card and compress
+   to a hard line on a short one. .theme__wash's 0.02in top padding plus the
+   first child's own top margin (0.08in on the motto, 0.05in on a
+   description) puts the first line of text at or just below where the
+   colour reaches full opacity. */
+.sheet-page--litm .theme__wash {
+  margin-top: 0.05in;            /* clearance below the pips so there's white
+                                    space to rest a pencil against */
+  padding-top: 0.02in;
 }
-.sheet-page--litm .theme--greatness {
+.sheet-page--litm .theme--origin .theme__wash {
   background-image: linear-gradient(to bottom,
-    transparent 0%,
-    transparent 45%,
-    rgba(74, 47, 96, 1.0) 49%,
-    rgba(74, 47, 96, 1.0) 100%);
+    rgba(63, 92, 47, 0) 0,
+    rgba(63, 92, 47, 1) 0.07in,
+    rgba(63, 92, 47, 1) 100%);
+}
+.sheet-page--litm .theme--adventure .theme__wash {
+  background-image: linear-gradient(to bottom,
+    rgba(122, 31, 31, 0) 0,
+    rgba(122, 31, 31, 1) 0.07in,
+    rgba(122, 31, 31, 1) 100%);
+}
+.sheet-page--litm .theme--greatness .theme__wash {
+  background-image: linear-gradient(to bottom,
+    rgba(74, 47, 96, 0) 0,
+    rgba(74, 47, 96, 1) 0.07in,
+    rgba(74, 47, 96, 1) 100%);
 }
 
 /* Recolour the quest motto, description prose, and special-improvement block
