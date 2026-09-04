@@ -90,6 +90,42 @@ body.sheet-page {
     var(--paper);
 }
 
+/* LitM page background — a landscape vista behind the parchment, mirroring
+   what Otherscape does with its Tokyo backdrop. Two source images, picked by
+   page orientation: a 16:9 ruins vista for the 11×8.5in landscape page and a
+   4:5 fellowship vista for the 8.5×11in portrait page, so `cover` crops each
+   one only slightly instead of throwing away a third of the composition.
+
+   The veil is the important part. Otherscape can show its backdrop at nearly
+   full strength because its ink is light-on-dark and every block sits in an
+   opaque panel. LitM is the reverse: brown ink on parchment, and the whole
+   character-info column (name, descriptor, quote, portrait) sits directly on
+   the page with no panel behind it. So a parchment-coloured scrim goes over
+   the vista at --vista-veil opacity. 0.72 lets the ruins, bridge and treeline
+   carry real weight while keeping the name, descriptor and quote legible in
+   print — around 0.65 is roughly where the ink starts fighting the darker
+   parts of the art. Push toward 0.85 for something more subdued. It's a
+   single number and it applies to both orientations.
+
+   Note the paper texture is *not* stacked here: background layers composite
+   over each other opaquely, so the texture image would simply hide the vista
+   underneath it. The vista art carries its own grain. */
+body.sheet-page--litm {
+  --vista-veil: 0.72;
+  background:
+    linear-gradient(rgba(236, 226, 200, var(--vista-veil)),
+                    rgba(236, 226, 200, var(--vista-veil))),
+    url("../images/bg-litm-vista-ruins.webp") center/cover no-repeat,
+    var(--paper);
+}
+body.orientation--portrait.sheet-page--litm {
+  background:
+    linear-gradient(rgba(236, 226, 200, var(--vista-veil)),
+                    rgba(236, 226, 200, var(--vista-veil))),
+    url("../images/bg-litm-vista-fellowship.webp") center/cover no-repeat,
+    var(--paper);
+}
+
 /* ---- Sheet layout -------------------------------------------------------- */
 /* Flexbox throughout — WeasyPrint's CSS Grid support hangs. */
 

@@ -91,6 +91,10 @@ registering it in `GAMES` — no template or CSS surgery required.
   each sector fills outward from the centre, one shell per theme of that type.
 - **Portrait upload** through the editor's file picker, stored in a writable
   `portraits/` folder beside your saved characters.
+- **Page backdrops.** Each game has a full-bleed background per orientation —
+  a Tokyo cityscape for Otherscape, and for Legend in the Mist a landscape
+  vista sitting behind a parchment veil (`--vista-veil` in `sheet.css` sets
+  how strongly the art reads against the ink).
 - **Landscape or portrait orientation.** Landscape gives the classic wide
   layout; portrait switches to a 2×2 grid of theme cards with more vertical
   room per card and a wider portrait column.
