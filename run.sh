@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# LitM / Otherscape Sheet Builder — Linux / macOS launcher.
+# Mist Engine Sheet Builder — Linux / macOS launcher.
 #
 # Double-click (or run from a terminal). On first launch it builds a private
 # Python virtual environment next to this script and installs the required

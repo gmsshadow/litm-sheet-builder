@@ -1,13 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec for the LitM / Otherscape Sheet Builder.
+"""PyInstaller spec for the Mist Engine Sheet Builder.
 
 Builds a self-contained executable that needs no separate Python install.
 Run it on the OS you want to target (PyInstaller does NOT cross-compile):
 
-    pyinstaller litm_sheet_builder.spec          # -> dist/LitM-Sheet-Builder/
+    pyinstaller mist_engine_sheet_builder.spec          # -> dist/Mist-Engine-Sheet-Builder/
 
-On Windows the result is dist\\LitM-Sheet-Builder\\LitM-Sheet-Builder.exe;
-on Linux it's dist/LitM-Sheet-Builder/LitM-Sheet-Builder.
+On Windows the result is dist\\Mist-Engine-Sheet-Builder\\Mist-Engine-Sheet-Builder.exe;
+on Linux it's dist/Mist-Engine-Sheet-Builder/Mist-Engine-Sheet-Builder.
 
 Notes
 -----
@@ -72,7 +72,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="LitM-Sheet-Builder",
+    name="Mist-Engine-Sheet-Builder",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -93,5 +93,5 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name="LitM-Sheet-Builder",
+    name="Mist-Engine-Sheet-Builder",
 )

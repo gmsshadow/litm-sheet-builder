@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 rem ===========================================================================
-rem  LitM / Otherscape Sheet Builder - Windows launcher.
+rem  Mist Engine Sheet Builder - Windows launcher.
 rem
 rem  Double-click this file. On first launch it builds a private Python
 rem  virtual environment in this folder and installs the required packages;

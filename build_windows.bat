@@ -4,8 +4,8 @@ rem ===========================================================================
 rem  Build a self-contained Windows executable with PyInstaller.
 rem  Run this ON a Windows machine (PyInstaller does not cross-compile).
 rem
-rem  Output: dist\LitM-Sheet-Builder\  (zip this folder to distribute)
-rem          dist\LitM-Sheet-Builder\LitM-Sheet-Builder.exe
+rem  Output: dist\Mist-Engine-Sheet-Builder\  (zip this folder to distribute)
+rem          dist\Mist-Engine-Sheet-Builder\Mist-Engine-Sheet-Builder.exe
 rem
 rem  Prerequisites:
 rem    * Python 3.10+ on PATH
@@ -28,13 +28,13 @@ python -m pip install -r requirements.txt pyinstaller
 if %ERRORLEVEL% neq 0 ( echo ERROR: dependency install failed. & pause & exit /b 1 )
 
 echo Building...
-pyinstaller --noconfirm --clean litm_sheet_builder.spec
+pyinstaller --noconfirm --clean mist_engine_sheet_builder.spec
 if %ERRORLEVEL% neq 0 ( echo ERROR: PyInstaller build failed. & pause & exit /b 1 )
 
 echo.
-echo Done. Standalone app is in:  dist\LitM-Sheet-Builder\
-echo Launch it by double-clicking: dist\LitM-Sheet-Builder\LitM-Sheet-Builder.exe
-echo To distribute, zip the whole dist\LitM-Sheet-Builder\ folder.
+echo Done. Standalone app is in:  dist\Mist-Engine-Sheet-Builder\
+echo Launch it by double-clicking: dist\Mist-Engine-Sheet-Builder\Mist-Engine-Sheet-Builder.exe
+echo To distribute, zip the whole dist\Mist-Engine-Sheet-Builder\ folder.
 echo.
 pause
 endlocal

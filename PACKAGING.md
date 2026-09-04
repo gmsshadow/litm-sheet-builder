@@ -41,18 +41,18 @@ binary on Linux.
 ```bash
 ./build_linux.sh
 ```
-Output: `dist/LitM-Sheet-Builder/` — launch with
-`./dist/LitM-Sheet-Builder/LitM-Sheet-Builder`. Zip that folder to distribute.
+Output: `dist/Mist-Engine-Sheet-Builder/` — launch with
+`./dist/Mist-Engine-Sheet-Builder/Mist-Engine-Sheet-Builder`. Zip that folder to distribute.
 
 ### Build on Windows
 ```bat
 build_windows.bat
 ```
-Output: `dist\LitM-Sheet-Builder\LitM-Sheet-Builder.exe`. Zip the
-`dist\LitM-Sheet-Builder\` folder to distribute.
+Output: `dist\Mist-Engine-Sheet-Builder\Mist-Engine-Sheet-Builder.exe`. Zip the
+`dist\Mist-Engine-Sheet-Builder\` folder to distribute.
 
 Both wrappers just set up a clean build venv and run
-`pyinstaller litm_sheet_builder.spec`. The spec produces a **one-dir** build (a
+`pyinstaller mist_engine_sheet_builder.spec`. The spec produces a **one-dir** build (a
 folder, not a single file) — it starts faster and is far more reliable for
 WeasyPrint than one-file.
 
@@ -75,8 +75,9 @@ binary on GitHub's runners, so you never need a Windows machine yourself.
 2. Create a Release (Releases → Draft a new release → pick a tag like `v1.0.0`
    → Publish).
 3. The workflow runs two jobs in parallel — one on `ubuntu-latest`, one on
-   `windows-latest` — and attaches `LitM-Sheet-Builder-linux-x64.zip` and
-   `LitM-Sheet-Builder-windows-x64.zip` to that release automatically.
+   `windows-latest` — and attaches `Mist-Engine-Sheet-Builder-linux-x64.zip`
+   and `Mist-Engine-Sheet-Builder-windows-x64.zip` to that release
+   automatically.
 
 You can also trigger it by hand (Actions → "Build standalone executables" →
 Run workflow); manual runs upload the zips as workflow **artifacts** instead of
@@ -84,8 +85,8 @@ attaching them to a release.
 
 Each job installs the GTK/Pango libraries WeasyPrint needs (via `apt` on Linux,
 via MSYS2's mingw-w64 packages on Windows), runs the same
-`litm_sheet_builder.spec`, then **smoke-tests** the built binary by rendering a
-PDF — so a broken bundle fails the build instead of shipping.
+`mist_engine_sheet_builder.spec`, then **smoke-tests** the built binary by
+rendering a PDF — so a broken bundle fails the build instead of shipping.
 
 > **Note on the Windows GTK step:** bundling Pango/Cairo on Windows is the one
 > part that can be finicky across runner-image updates. If a future Windows
@@ -133,8 +134,8 @@ button reports that PDF export is unavailable, with the same guidance.
 ## What gets shipped
 
 The launcher approach ships the project tree. The standalone build ships
-`dist/LitM-Sheet-Builder/`. In both cases these folders are bundled and don't
-need to be edited by users:
+`dist/Mist-Engine-Sheet-Builder/`. In both cases these folders are bundled and
+don't need to be edited by users:
 
 ```
 templates/   static/   core/   characters/ (seed)   run.py   requirements.txt

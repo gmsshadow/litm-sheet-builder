@@ -3,7 +3,7 @@
 # Build a self-contained Linux executable with PyInstaller.
 # Run this ON a Linux machine (PyInstaller does not cross-compile).
 #
-# Output: dist/LitM-Sheet-Builder/  (zip this folder to distribute)
+# Output: dist/Mist-Engine-Sheet-Builder/  (zip this folder to distribute)
 #
 # Prerequisites:
 #   * Python 3.10+
@@ -24,9 +24,9 @@ python -m pip install --upgrade pip >/dev/null
 python -m pip install -r requirements.txt pyinstaller
 
 echo "Building..."
-pyinstaller --noconfirm --clean litm_sheet_builder.spec
+pyinstaller --noconfirm --clean mist_engine_sheet_builder.spec
 
 echo ""
-echo "Done. Standalone app is in:  dist/LitM-Sheet-Builder/"
-echo "Launch it with:              ./dist/LitM-Sheet-Builder/LitM-Sheet-Builder"
-echo "To distribute, zip the whole dist/LitM-Sheet-Builder/ folder."
+echo "Done. Standalone app is in:  dist/Mist-Engine-Sheet-Builder/"
+echo "Launch it with:              ./dist/Mist-Engine-Sheet-Builder/Mist-Engine-Sheet-Builder"
+echo "To distribute, zip the whole dist/Mist-Engine-Sheet-Builder/ folder."

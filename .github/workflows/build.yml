@@ -42,30 +42,30 @@ jobs:
           python -m pip install -r requirements.txt pyinstaller
 
       - name: Build with PyInstaller
-        run: pyinstaller --noconfirm --clean litm_sheet_builder.spec
+        run: pyinstaller --noconfirm --clean mist_engine_sheet_builder.spec
 
       - name: Smoke-test the binary (render a PDF)
         # Fail the build early if WeasyPrint didn't bundle correctly, rather
         # than shipping a broken binary.
         run: |
-          ./dist/LitM-Sheet-Builder/LitM-Sheet-Builder pdf characters/litm/bumbler.json /tmp/ci-test.pdf
+          ./dist/Mist-Engine-Sheet-Builder/Mist-Engine-Sheet-Builder pdf characters/litm/bumbler.json /tmp/ci-test.pdf
           test -s /tmp/ci-test.pdf && echo "PDF rendered OK"
 
       - name: Package
         run: |
           cd dist
-          zip -r ../LitM-Sheet-Builder-linux-x64.zip LitM-Sheet-Builder
+          zip -r ../Mist-Engine-Sheet-Builder-linux-x64.zip Mist-Engine-Sheet-Builder
 
       - uses: actions/upload-artifact@v4
         with:
-          name: LitM-Sheet-Builder-linux-x64
-          path: LitM-Sheet-Builder-linux-x64.zip
+          name: Mist-Engine-Sheet-Builder-linux-x64
+          path: Mist-Engine-Sheet-Builder-linux-x64.zip
 
       - name: Attach to release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: LitM-Sheet-Builder-linux-x64.zip
+          files: Mist-Engine-Sheet-Builder-linux-x64.zip
 
   # ---------------------------------------------------------------- Windows --
   build-windows:
@@ -126,25 +126,25 @@ jobs:
       - name: Build with PyInstaller
         shell: pwsh
         run: |
-          & "$env:PYTHON" -m PyInstaller --noconfirm --clean litm_sheet_builder.spec
+          & "$env:PYTHON" -m PyInstaller --noconfirm --clean mist_engine_sheet_builder.spec
 
       - name: Smoke-test the binary (render a PDF)
         shell: pwsh
         run: |
-          .\dist\LitM-Sheet-Builder\LitM-Sheet-Builder.exe pdf characters\litm\bumbler.json $env:TEMP\ci-test.pdf
+          .\dist\Mist-Engine-Sheet-Builder\Mist-Engine-Sheet-Builder.exe pdf characters\litm\bumbler.json $env:TEMP\ci-test.pdf
           if ((Get-Item "$env:TEMP\ci-test.pdf").Length -gt 0) { Write-Host "PDF rendered OK" } else { exit 1 }
 
       - name: Package
         shell: pwsh
-        run: Compress-Archive -Path dist\LitM-Sheet-Builder -DestinationPath LitM-Sheet-Builder-windows-x64.zip
+        run: Compress-Archive -Path dist\Mist-Engine-Sheet-Builder -DestinationPath Mist-Engine-Sheet-Builder-windows-x64.zip
 
       - uses: actions/upload-artifact@v4
         with:
-          name: LitM-Sheet-Builder-windows-x64
-          path: LitM-Sheet-Builder-windows-x64.zip
+          name: Mist-Engine-Sheet-Builder-windows-x64
+          path: Mist-Engine-Sheet-Builder-windows-x64.zip
 
       - name: Attach to release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: LitM-Sheet-Builder-windows-x64.zip
+          files: Mist-Engine-Sheet-Builder-windows-x64.zip
