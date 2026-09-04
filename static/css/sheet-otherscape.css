@@ -180,14 +180,39 @@ body.orientation--portrait.sheet-page--otherscape .character-name {
 .sheet-page--otherscape .character-block {
   gap: 0.06in;
 }
+/* The tally spine widens to --tally-width so the essence diagram at its head
+   has somewhere to live. The rotated labels below are absolutely positioned
+   and centred, so they don't care how wide the column gets — the only cost
+   of widening is horizontal room taken from .character-info, which is why
+   it's a custom property you can dial back to 0.22in to restore the old
+   numbers-only spine. */
 .sheet-page--otherscape .theme-tally {
-  flex: 0 0 0.22in;
+  --tally-width: 0.6in;
+  flex: 0 0 var(--tally-width);
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
   height: 100%;
   padding: 0.06in 0;
+}
+
+/* Essence diagram — sits above the tally rows and keeps its own share of the
+   column height rather than stretching, so the three rows below still split
+   the remainder evenly. */
+.sheet-page--otherscape .essence-hex {
+  flex: 0 0 auto;
+  width: var(--tally-width);
+  height: var(--tally-width);
+  margin-bottom: 0.06in;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sheet-page--otherscape .essence-hex__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .sheet-page--otherscape .theme-tally__row {
   /* Each row gets an equal slice of the column height; the rotated

@@ -91,6 +91,15 @@
            stable across characters (e.g. always Self / Noise / Mythos).
            Coloured icon comes from tt.tally_icon, falling back to tt.icon. #}
         <aside class="theme-tally">
+          {# Isometric theme-mix diagram, sitting at the head of the tally
+             spine exactly as it does on the published cards. The SVG is
+             generated in core/essence_diagram.py from the same theme-type
+             counts the rows below print, so the picture and the numbers can
+             never disagree. `|safe` is deliberate: the markup is built by us,
+             not by user input. #}
+          {% if game.essence_diagram %}
+            <div class="essence-hex">{{ essence_diagram_svg(game, character, size=96)|safe }}</div>
+          {% endif %}
           {% for tt in game.theme_types %}
             {% set count = character.themes | selectattr('theme_type', 'equalto', tt.id) | list | length %}
             <div class="theme-tally__row theme-tally__row--{{ tt.id }}">

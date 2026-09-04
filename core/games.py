@@ -15,6 +15,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable
 
+from .essence_diagram import EssenceDiagram
+
 
 # ---------------------------------------------------------------------------
 # Building blocks
@@ -100,6 +102,7 @@ class GameProfile:
     essences: list["Essence"] = field(default_factory=list)  # catalogue of the game's set essences, used both for the automatic calculation and to populate the editor's dropdown. Empty means no automatic system (the essence fields, if shown at all, are then free-text only).
     essence_label: str = "Essence"   # heading shown above the essence type on the sheet.
     essence_special_label: str = "Essence Special"  # label for the essence's bonus-rule paragraph — mirrors special_label but for the character-level essence rather than a single theme.
+    essence_diagram: "EssenceDiagram | None" = None  # isometric theme-mix diagram (Otherscape's cube-in-a-hexagon). Declares which theme type occupies which face of the isometric corner; None disables the whole thing, which is what LitM wants.
 
     # Asset paths
     background: str = ""             # background image filename
@@ -345,6 +348,11 @@ OTHERSCAPE = GameProfile(
     essences=OTHERSCAPE_ESSENCES,
     essence_label="Essence",
     essence_special_label="Essence Special",
+    # Face assignment matches the published cards: Mythos on the left wall,
+    # Noise on the right wall, Self on the floor. `rings` is 4 because a
+    # character carries four themes, so four of one type fills that sector
+    # right out to the hexagon's edge.
+    essence_diagram=EssenceDiagram(left="mythos", right="noise", floor="self", rings=4),
     starting_active_tags=2,
     background="bg-otherscape-tokyo.webp",
     stylesheet="sheet-otherscape.css",

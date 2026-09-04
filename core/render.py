@@ -11,6 +11,7 @@ from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from .essence_diagram import essence_diagram_svg
 from .games import get_game
 from .models import Character
 from .paths import resource_root, templates_dir, static_dir, portraits_dir
@@ -55,12 +56,18 @@ def _portrait_url(portrait_path: Optional[str], for_pdf: bool) -> Optional[str]:
 
 
 def _env() -> Environment:
-    return Environment(
+    env = Environment(
         loader=FileSystemLoader(str(TEMPLATES)),
         autoescape=select_autoescape(["html"]),
         trim_blocks=True,
         lstrip_blocks=True,
     )
+    # The essence diagram is generated markup rather than a static asset, so
+    # it goes in as a global the template can call. It returns "" for games
+    # whose profile has no essence_diagram, so the template needn't guard it
+    # beyond the usual `{% if %}` for layout purposes.
+    env.globals["essence_diagram_svg"] = essence_diagram_svg
+    return env
 
 
 def render_sheet_html(character: Character, *, embed_css: bool = False, for_pdf: bool = False) -> str:
