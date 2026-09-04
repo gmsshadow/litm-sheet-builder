@@ -59,9 +59,13 @@ WeasyPrint than one-file.
 The build is large (~250–300 MB) because it includes Python, WeasyPrint, and the
 font/graphics libraries. That's normal for a bundled WeasyPrint app.
 
-User saves persist: on first run the app copies the bundled sample characters
-into a writable `characters/` folder next to the executable, and all future
-saves go there.
+User data persists next to the executable. On first run the app copies the
+bundled sample characters into a writable `characters/` folder there, and all
+future saves go to it; imported portraits land in `portraits/` and exported
+sheets in `output/<game>/`, both created on demand. Tell users to unzip
+somewhere they can write — a Documents or Desktop folder rather than Program
+Files. Exports still work from a read-only location (the PDF downloads through
+the browser as normal), but the kept copy in `output/` is skipped.
 
 ---
 

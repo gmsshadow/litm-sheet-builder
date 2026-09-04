@@ -7,3 +7,6 @@ __pycache__/
 *.pyc
 *.spec.bak
 _tmp.pdf
+
+# Exported sheets — user output, regenerated on demand
+output/

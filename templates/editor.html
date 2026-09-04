@@ -26,6 +26,7 @@
     <button type="button" id="btn-preview">Preview</button>
     <button type="button" id="btn-pdf">Export PDF</button>
     <button type="button" id="btn-save">Save</button>
+    <span id="status" class="status" role="status" aria-live="polite"></span>
   </div>
 </header>
 
@@ -303,12 +304,27 @@
     a.href = url; a.download = (slug || "character") + ".pdf";
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
+    // The server also keeps a copy in the app's output/ folder. Surface that
+    // path so the download isn't the only trace of the export the user has.
+    const kept = res.headers.get("X-Output-Path");
+    if (kept) setStatus("Exported. A copy was kept in " + kept);
   });
+
+  // Transient one-line feedback in the toolbar. Preferred over alert() for
+  // routine confirmations — an export is a thing you do repeatedly and a
+  // modal every time gets old fast.
+  const statusEl = document.getElementById("status");
+  let statusTimer = null;
+  function setStatus(msg) {
+    statusEl.textContent = msg;
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => { statusEl.textContent = ""; }, 6000);
+  }
 
   document.getElementById("btn-save").addEventListener("click", async () => {
     const res = await fetch("/save", { method: "POST", body: formData() });
     const out = await res.json();
-    alert(out.ok ? "Saved as " + out.path : "Save failed");
+    if (out.ok) setStatus("Saved as " + out.path); else alert("Save failed");
   });
 
   // Row add/remove buttons.

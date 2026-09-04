@@ -23,7 +23,7 @@ from flask import Flask, render_template, request, send_file, send_from_director
 from .games import GAMES, get_game, DEFAULT_GAME_ID
 from .models import Character, Theme
 from .render import render_sheet_html, render_sheet_pdf
-from .paths import templates_dir, static_dir, characters_dir, portraits_dir
+from .paths import templates_dir, static_dir, characters_dir, portraits_dir, output_dir
 
 # Writable characters library — resolves next to the executable when frozen,
 # or the project root from source. Created/seeded on first access.
@@ -35,6 +35,34 @@ PORTRAITS_DIR = portraits_dir()
 # would balloon the writable data dir.
 MAX_PORTRAIT_BYTES = 6 * 1024 * 1024
 _ALLOWED_PORTRAIT_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+
+
+def _pdf_target(game_id: str, slug: str) -> tuple[Path, bool]:
+    """Where to render a PDF, and whether that location is the kept archive.
+
+    Returns (path, archived). archived=False means the caller got a throwaway
+    temp file and should delete it after reading the bytes.
+    """
+    try:
+        game_out = output_dir() / game_id
+        game_out.mkdir(parents=True, exist_ok=True)
+        return game_out / f"{slug}.pdf", True
+    except OSError:
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tf:
+            return Path(tf.name), False
+
+
+def _friendly_output_path(path: Path) -> str:
+    """Report an archived PDF as output/<game>/<slug>.pdf where possible.
+
+    A path relative to the data root is what the user actually sees when they
+    open the app's folder; the absolute path is only a useful fallback.
+    """
+    try:
+        return str(path.relative_to(output_dir().parent))
+    except (ValueError, OSError):
+        return str(path)
 
 
 def create_app() -> Flask:
@@ -98,27 +126,45 @@ def create_app() -> Flask:
 
     @app.route("/pdf", methods=["POST"])
     def pdf():
+        """Render the current form state to PDF.
+
+        Two destinations, deliberately. The bytes are streamed back to the
+        browser as a download, because that's the one delivery mechanism that
+        works everywhere — over a network, from a locked-down browser, with
+        the user choosing where the file lands. And the same render is kept in
+        the writable output/ library, so every export leaves a durable copy
+        beside characters/ and portraits/ instead of vanishing into a download
+        history the app can't see or point at.
+
+        The archive is best-effort: if output/ can't be written (app installed
+        under Program Files, read-only mount), the export falls back to a
+        scratch file in the OS temp dir and the download still succeeds. An
+        export must never fail because the archive copy couldn't be made.
+        """
         character = _character_from_form(request.form, request.files)
         slug = _slug(character.name) or "character"
+        target, archived = _pdf_target(character.game, slug)
         buf = io.BytesIO()
         try:
-            # Render to a scratch file in the OS temp dir (the resource root is
-            # read-only when frozen), then stream its bytes back to the client.
-            import tempfile
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tf:
-                tmp_path = Path(tf.name)
-            render_sheet_pdf(character, tmp_path)
-            buf.write(tmp_path.read_bytes())
-            tmp_path.unlink(missing_ok=True)
+            render_sheet_pdf(character, target)
+            buf.write(target.read_bytes())
         except RuntimeError as e:
             return (str(e), 500)
+        finally:
+            if not archived:
+                target.unlink(missing_ok=True)
         buf.seek(0)
-        return send_file(
+        response = send_file(
             buf,
             mimetype="application/pdf",
             as_attachment=True,
             download_name=f"{slug}.pdf",
         )
+        if archived:
+            # Same-origin fetch, so the editor can read this back off the
+            # response and tell the user where the kept copy went.
+            response.headers["X-Output-Path"] = _friendly_output_path(target)
+        return response
 
     # ---- persistence -------------------------------------------------------
 

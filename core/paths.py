@@ -81,6 +81,25 @@ def portraits_dir() -> Path:
     return target
 
 
+def output_dir() -> Path:
+    """Writable directory for rendered PDFs.
+
+    Sits beside characters/ and portraits/ in the data root, so a user who
+    opens the app's folder finds their saved characters, the portraits they
+    imported, and the sheets they exported in three obvious places rather
+    than having exports scattered through a browser download history.
+    Auto-created on first access; never seeded.
+
+    Callers must tolerate this raising OSError: when the app is installed
+    somewhere the user can't write to (Program Files, /opt), the export is
+    still expected to succeed via the browser download, just without the
+    archived copy.
+    """
+    target = data_root() / "output"
+    target.mkdir(parents=True, exist_ok=True)
+    return target
+
+
 def _seed_characters(target: Path) -> None:
     """Copy bundled sample characters into a freshly-created data dir.
 

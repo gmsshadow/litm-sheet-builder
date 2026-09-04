@@ -31,9 +31,9 @@ python run.py
 
 ```bash
 python run.py pdf characters/otherscape/vex.json
-# → writes characters/otherscape/vex.pdf
+# → writes output/otherscape/vex.pdf
 
-python run.py pdf characters/litm/roen-stillhand.json out/roen.pdf
+python run.py pdf characters/litm/roen-stillhand.json somewhere/else/roen.pdf
 ```
 
 Environment variables recognised by `run.py` and the launchers:
@@ -101,7 +101,10 @@ registering it in `GAMES` — no template or CSS surgery required.
 - **JSON character library** under `characters/<game>/`, with transparent
   migration of older schemas so nothing you saved months ago stops loading.
 - **PDF export** via WeasyPrint, plus a standalone HTML path that prints
-  identically from a browser if WeasyPrint isn't available.
+  identically from a browser if WeasyPrint isn't available. Every export is
+  streamed to the browser as a download *and* kept in `output/<game>/`, so
+  there's a durable copy beside your characters and portraits rather than
+  only whatever landed in the browser's download history.
 
 ---
 
@@ -131,16 +134,24 @@ registering it in `GAMES` — no template or CSS surgery required.
 │   │   ├── sheet.css               # shared layout + LitM styling
 │   │   └── sheet-otherscape.css    # Otherscape overrides layered on top
 │   └── icons/  images/  fonts/
-└── characters/
-    ├── litm/                       # roen-stillhand.json, bumbler.json
-    └── otherscape/                 # vex.json, wilson.json
+├── characters/                     # writable character library
+│   ├── litm/                       # roen-stillhand.json, bumbler.json
+│   └── otherscape/                 # vex.json, wilson.json
+├── portraits/                      # writable — portraits imported via the editor
+└── output/                         # writable — exported PDFs, by game
 ```
+
+`portraits/` and `output/` are created on first use and are gitignored;
+`characters/` ships with the four samples and is seeded into a fresh install.
 
 Two path roots keep the same code working from a checkout and from a frozen
 build (`core/paths.py`): a **resource root** for read-only bundled assets, and a
-**data root** for the writable `characters/` and `portraits/` folders. In a
-standalone build the data root sits next to the executable, so saves persist and
-users can find their files.
+**data root** for the writable `characters/`, `portraits/` and `output/`
+folders. In a standalone build the data root sits next to the executable, so
+saves and exports persist and users can find their files in one obvious place.
+If that location turns out not to be writable — an install under Program Files,
+a read-only mount — PDF export degrades gracefully: the browser download still
+works, only the kept copy is skipped.
 
 ---
 

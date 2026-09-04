@@ -19,13 +19,26 @@ from pathlib import Path
 
 from core.app import create_app
 from core.models import Character
+from core.paths import output_dir
 from core.render import render_sheet_pdf
 
 
 def _cli_pdf(json_path: str, out_path: str | None = None) -> None:
+    """Render a saved character JSON to PDF.
+
+    With no explicit destination the sheet lands in the app's output/ library
+    (output/<game>/<slug>.pdf), matching where the editor's Export PDF button
+    keeps its copy — so batch-rendering from the CLI and clicking through the
+    editor put files in the same place rather than scattering PDFs next to
+    the character JSONs.
+    """
     src = Path(json_path)
     character = Character.load(src)
-    out = Path(out_path) if out_path else src.with_suffix(".pdf")
+    if out_path:
+        out = Path(out_path)
+    else:
+        out = output_dir() / character.game / f"{src.stem}.pdf"
+    out.parent.mkdir(parents=True, exist_ok=True)
     render_sheet_pdf(character, out)
     print(f"Wrote {out}")
 
