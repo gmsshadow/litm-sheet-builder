@@ -101,17 +101,17 @@ body.sheet-page {
    opaque panel. LitM is the reverse: brown ink on parchment, and the whole
    character-info column (name, descriptor, quote, portrait) sits directly on
    the page with no panel behind it. So a parchment-coloured scrim goes over
-   the vista at --vista-veil opacity. 0.72 lets the ruins, bridge and treeline
-   carry real weight while keeping the name, descriptor and quote legible in
-   print — around 0.65 is roughly where the ink starts fighting the darker
-   parts of the art. Push toward 0.85 for something more subdued. It's a
-   single number and it applies to both orientations.
+   the vista at --vista-veil opacity. 0.68 gives the ruins, bridge and
+   treeline real presence; the name, descriptor and quote are the constraint,
+   since that column has no panel behind it, and somewhere around 0.65 the
+   ink starts fighting the darker parts of the art. Push toward 0.85 for
+   something more subdued. Single number, applies to both orientations.
 
    Note the paper texture is *not* stacked here: background layers composite
    over each other opaquely, so the texture image would simply hide the vista
    underneath it. The vista art carries its own grain. */
 body.sheet-page--litm {
-  --vista-veil: 0.72;
+  --vista-veil: 0.68;
   background:
     linear-gradient(rgba(236, 226, 200, var(--vista-veil)),
                     rgba(236, 226, 200, var(--vista-veil))),
